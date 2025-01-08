@@ -1,0 +1,122 @@
+import { db } from "../../models/db.js";
+
+const queryAsync = async (query, params) => {
+  try {
+    const [results] = await db.execute(query, params);
+    return results;
+  } catch (err) {
+    console.error("Database query error:", err);
+    throw new Error("Database operation failed.");
+  }
+};
+
+export const filterDetails = async (req, res) => {
+  let { status, sortField, sortOrder, page, limit } = req.query;
+
+  console.log("hello");
+
+  // Validate status: allowed values (add more if necessary)
+  const validStatuses = [
+    "created",
+    "submitted",
+    "cancelled",
+    "completed",
+    "assigned",
+  ];
+  if (status && !validStatuses.includes(status)) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid status. Allowed values are ${validStatuses.join(
+        ", "
+      )}.`,
+    });
+  }
+
+  // Validate sortField: allowed fields (add more if necessary)
+
+  const validSortFields = ["id", "name", "status", "driver", "tripmode"];
+  const validSortOrders = ["ASC", "DESC"];
+
+  const sortBy = validSortFields.includes(sortField) ? sortField : "id"; // Default to 'id'
+  const orderBy = validSortOrders.includes(sortOrder) ? sortOrder : "DESC"; // Default to 'DESC'
+
+  if (sortField && !validSortFields.includes(sortField)) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid sortField. Allowed values are ${validSortFields.join(
+        ", "
+      )}.`,
+    });
+  }
+
+  // Validate sortOrder: should be "asc" or "desc"
+
+  if (sortOrder && !validSortOrders.includes(sortOrder)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid sortOrder. It should be either "asc" or "desc".',
+    });
+  }
+
+  // Validate page: should be a positive integer
+  if (page && (isNaN(page) || parseInt(page) <= 0)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid page number. It should be a positive integer.",
+    });
+  }
+
+  // Validate limit: should be a positive integer
+  if (limit && (isNaN(limit) || parseInt(limit) <= 0)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid limit. It should be a positive integer.",
+    });
+  }
+
+  let query = `SELECT * FROM tripdetails WHERE 1=1`;
+  const values = [];
+
+  // Add filters dynamically
+
+  if (status) {
+    query += ` AND status = ?`;
+    values.push(status);
+  }
+
+  // Add sorting
+  query += ` ORDER BY ${sortBy} ${orderBy}`;
+
+  limit = limit ? parseInt(limit) : 10; // Default limit
+  const offset = (page - 1) * limit;
+
+  try {
+    // Get total count of filtered results
+    const countQuery =
+      `SELECT COUNT(*) AS total FROM tripdetails WHERE 1=1` +
+      (status ? ` AND status = ?` : "");
+
+    const countResults = await queryAsync(countQuery, values);
+    const totalItems = countResults[0].total;
+
+    // Add pagination to the main query
+    query += ` LIMIT ${limit} OFFSET ${offset}`;
+
+    // Execute the main query
+    const results = await queryAsync(query, values);
+
+    res.status(200).json({
+      success: true,
+      data: results, // Filtered and paginated data
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+      currentPage: page,
+    });
+  } catch (err) {
+    console.error("Error fetching filtered details:", err.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch trip details.",
+    });
+  }
+};

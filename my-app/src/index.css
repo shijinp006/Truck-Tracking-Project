@@ -1,0 +1,44 @@
+/* Import Tailwind's base styles (resets and defaults) */
+@tailwind base;
+
+/* Add your custom base styles if needed */
+@layer base {
+  /* Example of adding custom base styles */
+  h1 {
+    @apply text-2xl font-bold text-gray-900;
+  }
+
+  body {
+    @apply bg-gray-100 text-gray-800;
+  }
+}
+
+/* Import Tailwind's component styles */
+@tailwind components;
+
+/* Add your custom components */
+@layer components {
+  /* Example of reusable component styles */
+  .btn-primary {
+    @apply bg-blue-500 text-white font-medium py-2 px-4 rounded hover:bg-blue-600;
+  }
+
+  .card {
+    @apply bg-white shadow-md rounded-lg p-4;
+  }
+}
+
+/* Import Tailwind's utility classes */
+@tailwind utilities;
+
+/* Add your custom utilities */
+@layer utilities {
+  /* Example of extending utility classes */
+  .content-auto {
+    content-visibility: auto;
+  }
+
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+}

@@ -1,0 +1,94 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+.form-group {
+  margin-bottom: 15px; /* Add space between fields */
+}
+.swal-responsive-popup {
+  max-width: 90%; /* Adjust for smaller screens */
+  width: 400px; /* Default size */
+}
+
+.swal-label {
+  font-weight: bold;
+  color: #333;
+}
+
+.swal-input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100%; /* Ensure it scales */
+}
+
+.swal-confirm-btn {
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+}
+
+.swal-cancel-btn {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+}
+.swal2-input {
+  margin-bottom: 10px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.swal2-input.small {
+  width: 200px;
+  height: 30px;
+  padding: 5px;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 10px; /* Add more padding for smaller screens */
+  }
+
+  .profile-card {
+    width: 90%; /* Make the profile card take 90% width on small screens */
+  }
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
