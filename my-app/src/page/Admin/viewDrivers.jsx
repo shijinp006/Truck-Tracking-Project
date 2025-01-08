@@ -7,6 +7,7 @@ const ViewDrivers = () => {
   const [currentUser, setCurrentuser] = useState(null);
   const [isFormVisible, setFormVisible] = useState(false);
   const [isEditFormVisible, setEditFormVisible] = useState(false);
+  const [drivermodel, setDrivermodel] = useState(true);
   const [formData, setFormData] = useState({
     credit: '',
   });
@@ -47,6 +48,7 @@ const ViewDrivers = () => {
     setCurrentuser(user);
     setFormVisible(true);
     setEditFormVisible(false);
+    setDrivermodel(false);
   };
 
   const handleChange = (e) => {
@@ -57,7 +59,8 @@ const ViewDrivers = () => {
     }));
   };
   const handlesave = async (e, id) => {
-    e.preventDefult();
+    e.preventDefault(); // Prevent form from submitting the default way
+
     const token = localStorage.getItem('token');
     if (!token) {
       // Show error message if token is missing
@@ -94,12 +97,28 @@ const ViewDrivers = () => {
 
       console.log('Response:', response.data);
 
-      // Optionally show a success message or update UI after successful save
+      // Update the user data in the state immediately
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === id
+            ? {
+                ...user,
+                creditpointreceived: formData.credit, // Update specific field
+                creditpoint: response.data.updatedCreditPoint, // Example from API response
+              }
+            : user
+        )
+      );
+
+      // Optionally show a success message
       await Swal.fire({
         icon: 'success',
         title: 'Saved Successfully',
         text: 'Your data has been saved.',
       });
+
+      // Reload the page after success
+      window.location.reload();
     } catch (error) {
       console.error(
         'Error in handlesave:',
@@ -123,6 +142,7 @@ const ViewDrivers = () => {
 
   const handleCancel = () => {
     setFormVisible(false);
+    setDrivermodel(true);
   };
 
   const handleEdit = async (user) => {
@@ -130,14 +150,17 @@ const ViewDrivers = () => {
     setCurrentuser(user);
     setEditFormVisible(true);
     setFormVisible(false);
+    setDrivermodel(false);
   };
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setEditform({ ...editform, [name]: value });
   };
 
-  const handleEditSubmit = async (id) => {
+  const handleEditSubmit = async (e, id) => {
+    e.preventDefualt;
     setEditFormVisible(false);
+    setDrivermodel(true);
 
     try {
       // Check for the token
@@ -241,77 +264,79 @@ const ViewDrivers = () => {
 
   const CancelEdit = async () => {
     setEditFormVisible(false);
+    setDrivermodel(true);
   };
 
-  const handleDelete = async (id) => {
-    setEditFormVisible(false);
-    setFormVisible(false);
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        await Swal.fire({
-          icon: 'error',
-          title: 'Authorization Failed',
-          text: 'Authorization token is missing. Please log in again.',
-        });
-        return;
-      }
+  // const handleDelete = async (id) => {
+  //   setEditFormVisible(false);
+  //   setFormVisible(false);
+  //   try {
+  //     const token = localStorage.getItem('token');
+  //     if (!token) {
+  //       await Swal.fire({
+  //         icon: 'error',
+  //         title: 'Authorization Failed',
+  //         text: 'Authorization token is missing. Please log in again.',
+  //       });
+  //       return;
+  //     }
 
-      // Show confirmation dialog before deletion
-      const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, delete it!',
-        cancelButtonText: 'No, cancel!',
-      });
+  //     // Show confirmation dialog before deletion
+  //     const result = await Swal.fire({
+  //       title: 'Are you sure?',
+  //       text: "You won't be able to revert this!",
+  //       icon: 'warning',
+  //       showCancelButton: true,
+  //       confirmButtonText: 'Yes, delete it!',
+  //       cancelButtonText: 'No, cancel!',
+  //     });
 
-      if (!result.isConfirmed) {
-        return; // If the user cancels, don't proceed
-      }
+  //     if (!result.isConfirmed) {
+  //       return; // If the user cancels, don't proceed
+  //     }
 
-      // Proceed with deletion if confirmed
-      const response = await axios.delete(`/Admin/deleteuser/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+  //     // Proceed with deletion if confirmed
+  //     const response = await axios.delete(`/Admin/deleteuser/${id}`, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //     });
 
-      // Handle successful deletion
-      if (response.status === 200) {
-        await Swal.fire({
-          icon: 'success',
-          title: 'User Deleted',
-          text: response.data.message,
-        });
+  //     // Handle successful deletion
+  //     if (response.status === 200) {
+  //       await Swal.fire({
+  //         icon: 'success',
+  //         title: 'User Deleted',
+  //         text: response.data.message,
+  //       });
 
-        // Remove the deleted user from the state
-        setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
-      }
-    } catch (error) {
-      console.error('Error deleting user:', error);
+  //       // Remove the deleted user from the state
+  //       setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
+  //     }
+  //   } catch (error) {
+  //     console.error('Error deleting user:', error);
 
-      // Enhanced error handling to capture specific messages
-      const errorMessage =
-        error.response?.data?.message ||
-        'Failed to delete user. Please try again.';
+  //     // Enhanced error handling to capture specific messages
+  //     const errorMessage =
+  //       error.response?.data?.message ||
+  //       'Failed to delete user. Please try again.';
 
-      // Displaying the error message
-      await Swal.fire({
-        icon: 'error',
-        title: 'Deletion Failed',
-        text: errorMessage,
-      });
-    }
-  };
+  //     // Displaying the error message
+  //     await Swal.fire({
+  //       icon: 'error',
+  //       title: 'Deletion Failed',
+  //       text: errorMessage,
+  //     });
+  //   }
+  // };
 
   return (
     <div className="p-6">
       <h2 className="text-2xl font-semibold text-gray-700">Users List</h2>
 
       {/* Filter by Driver Name */}
+
       <div className="mt-4">
         <label
           htmlFor="driverFilter"
@@ -331,57 +356,59 @@ const ViewDrivers = () => {
 
       {users.length > 0 ? (
         <div className="mt-4">
-          <table className="table-auto w-full border-collapse border border-gray-200">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border px-4 py-2">Name</th>
-                <th className="border px-4 py-2">Phone</th>
-                <th className="border px-4 py-2">Received Credit</th>
-                <th className="border px-4 py-2">Redeemed Credit</th>
-                <th className="border px-4 py-2">Credit Balance</th>
-                <th className="border px-4 py-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td className="border px-4 py-2">{user.name}</td>
-                  <td className="border px-4 py-2">{user.phoneNumber}</td>
-                  <td className="border px-4 py-2">{user.creditpoint}</td>
-                  <td className="border px-4 py-2">
-                    {user.creditpointreceived}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {user.creditpoint - user.creditpointreceived < 0
-                      ? 0
-                      : user.creditpoint - user.creditpointreceived}
-                  </td>
-                  <td className="border px-4 py-2 flex gap-2">
-                    <button
-                      className="bg-red-400 text-white px-3 py-1 rounded hover:bg-red-500"
-                      onClick={() => handleClime(user)}
-                    >
-                      Redeem
-                    </button>
-                    {/* Additional Edit Button */}
-                    <button
-                      className="bg-blue-400 text-white px-3 py-1 rounded hover:bg-blue-500"
-                      onClick={() => handleEdit(user)}
-                    >
-                      Edit
-                    </button>
-                    {/* Additional Delete Button */}
-                    {/* <button
+          {drivermodel && (
+            <table className="table-auto w-full border-collapse border border-gray-200">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border px-4 py-2">Name</th>
+                  <th className="border px-4 py-2">Phone</th>
+                  <th className="border px-4 py-2">Received Credit</th>
+                  <th className="border px-4 py-2">Redeemed Credit</th>
+                  <th className="border px-4 py-2">Credit Balance</th>
+                  <th className="border px-4 py-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id}>
+                    <td className="border px-4 py-2">{user.name}</td>
+                    <td className="border px-4 py-2">{user.phoneNumber}</td>
+                    <td className="border px-4 py-2">{user.creditpoint}</td>
+                    <td className="border px-4 py-2">
+                      {user.creditpointreceived}
+                    </td>
+                    <td className="border px-4 py-2">
+                      {user.creditpoint - user.creditpointreceived < 0
+                        ? 0
+                        : user.creditpoint - user.creditpointreceived}
+                    </td>
+                    <td className="border px-4 py-2 flex gap-2">
+                      <button
+                        className="bg-red-400 text-white px-3 py-1 rounded hover:bg-red-500"
+                        onClick={() => handleClime(user)}
+                      >
+                        Redeem
+                      </button>
+                      {/* Additional Edit Button */}
+                      <button
+                        className="bg-blue-400 text-white px-3 py-1 rounded hover:bg-blue-500"
+                        onClick={() => handleEdit(user)}
+                      >
+                        Edit
+                      </button>
+                      {/* Additional Delete Button */}
+                      {/* <button
                       className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500"
                       onClick={() => handleDelete(user.id)}
                     >
                       Delete
                     </button> */}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       ) : (
         <p>No users found.</p>
@@ -390,7 +417,10 @@ const ViewDrivers = () => {
       {isFormVisible && (
         <div className="mt-6 bg-white p-4 shadow rounded">
           <h3 className="text-xl font-semibold text-gray-700">Credit Clime</h3>
-          <form className="mt-4" onSubmit={(e) => handlesave(currentUser.id)}>
+          <form
+            className="mt-4"
+            onSubmit={(e) => handlesave(e, currentUser.id)} // Handle form submission here
+          >
             <div className="mb-4">
               <label
                 htmlFor="creditpointrecieved"
@@ -412,8 +442,8 @@ const ViewDrivers = () => {
             <div className="flex items-center justify-end gap-4">
               <button
                 type="submit"
+                id="saveButton"
                 className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-                onClick={() => handlesave(currentUser.id)}
               >
                 Save Changes
               </button>
@@ -434,7 +464,7 @@ const ViewDrivers = () => {
           <h3 className="text-xl font-semibold text-gray-700 mb-4">
             Edit User
           </h3>
-          <form>
+          <form onSubmit={(e) => handleEditSubmit(e, currentUser.id)}>
             <div className="mb-4">
               <label
                 htmlFor="name"
@@ -490,7 +520,6 @@ const ViewDrivers = () => {
               <button
                 type="submit"
                 className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-                onClick={() => handleEditSubmit(currentUser.id)}
               >
                 Save Changes
               </button>

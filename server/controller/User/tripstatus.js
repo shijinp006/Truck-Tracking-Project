@@ -105,9 +105,9 @@ export const tripCancel = async (req, res) => {
 
     if (tripExists.length > 0) {
       // Update the status to 'Cancelled'
-      const status = "pending";
+      const status = "created";
       const meterbefore = 0;
-      const meterbeforefile = "";
+      const meterbeforefile = null;
       const updateQuery =
         "UPDATE tripdetails SET status = ?, meterbefore = ?, meterbeforefile = ? WHERE id = ?";
       await queryAsync(updateQuery, [

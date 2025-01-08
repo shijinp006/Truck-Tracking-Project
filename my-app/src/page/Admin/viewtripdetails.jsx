@@ -15,6 +15,7 @@ const ViewTripDetails = () => {
   const [tripDetails, setTripDetails] = useState([]);
   const [filteredTrips, setFilteredTrips] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [vehicle, setVehicles] = useState([]);
   const [driverFilter, setDriverFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
@@ -95,11 +96,20 @@ const ViewTripDetails = () => {
     setCategories(response.data.data);
   };
 
+  const getvehicles = async () => {
+    const response = await axios.get(`/Admin/getVehicle`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    setVehicles(response.data.data);
+  };
   useEffect(() => {
     // Fetch trip details
 
     fetchFilteredTrips();
     getcategory();
+    getvehicles();
 
     axios
       .get('/Admin/getuser', {
@@ -1211,16 +1221,21 @@ const ViewTripDetails = () => {
                 >
                   Name
                 </label>
-                <input
-                  type="text"
+                <select
                   id="name"
                   name="name"
                   value={editform.name || ''}
                   onChange={handleEditChange}
                   className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md"
-                />
+                >
+                  <option value="">Select a name</option>
+                  {userDetails.map((driver) => (
+                    <option key={driver.id} value={driver.name}>
+                      {driver.name}
+                    </option>
+                  ))}
+                </select>
               </div>
-
               {/* Trip From */}
               <div className="mb-4">
                 <label
@@ -1319,14 +1334,22 @@ const ViewTripDetails = () => {
                 >
                   Vehicle Number
                 </label>
-                <input
-                  type="text"
+                <select
                   id="vehiclenumber"
                   name="vehiclenumber"
                   value={editform.vehiclenumber || ''}
                   onChange={handleEditChange}
                   className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md"
-                />
+                >
+                  <option value="" disabled>
+                    Select a Vehicle Number
+                  </option>
+                  {vehicle.map((vehicle) => (
+                    <option key={vehicle.id} value={vehicle.vehicleNumber}>
+                      {vehicle.vehicleNumber}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Trip Mode */}
@@ -1355,16 +1378,25 @@ const ViewTripDetails = () => {
                 >
                   Category
                 </label>
-                <input
-                  type="text"
+                <select
                   id="category"
                   name="category"
                   value={editform.category || ''}
                   onChange={handleEditChange}
                   className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
+                >
+                  <option value="" disabled>
+                    Select a Category
+                  </option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.name}>
+                      {category.name}
+                    </option>
+                  ))}
 
+                  {/* Add more options dynamically if needed */}
+                </select>
+              </div>
               {/* Credit */}
               <div className="mb-4">
                 <label
@@ -1391,14 +1423,23 @@ const ViewTripDetails = () => {
                 >
                   Status
                 </label>
-                <input
-                  type="text"
+                <select
                   id="status"
                   name="status"
                   value={editform.status || ''}
                   onChange={handleEditChange}
                   className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md"
-                />
+                >
+                  <option value="" disabled>
+                    Select Status
+                  </option>
+                  <option value="created">Created</option>
+                  <option value="assiagned">Assiagned</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="inprogress">Inprogress</option>
+                  <option value="completed">Completed</option>
+                  {/* Add more options dynamically if needed */}
+                </select>
               </div>
               <div className="mb-4">
                 <label

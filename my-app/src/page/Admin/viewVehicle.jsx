@@ -7,6 +7,7 @@ const ViewVehicles = () => {
   const [vehicles, setVehicles] = useState([]);
   const [newVhicle, setNewVehicle] = useState([]);
   const [isEditFormVisible, setEditformVisible] = useState(false);
+  const [vehiclemodel, setVehiclemodel] = useState(true);
   const [editform, setEditform] = useState({
     vehicleNumber: '',
     vehicleName: '',
@@ -29,12 +30,14 @@ const ViewVehicles = () => {
     setEditform(vehicle);
     setEditformVisible(true);
     setNewVehicle(vehicle);
+    setVehiclemodel(false);
     // Implement edit functionality
   };
 
   const handelSaveVehicle = async (e, id) => {
     e.preventDefault();
     setEditformVisible(false);
+    setVehiclemodel(true);
 
     try {
       const response = await axios.put(`/Admin/editVehicle/${id}`, editform, {
@@ -87,6 +90,7 @@ const ViewVehicles = () => {
 
   const handleCancel = async () => {
     setEditformVisible(false);
+    setVehiclemodel(true);
   };
 
   const handleDelete = async (id) => {
@@ -139,59 +143,63 @@ const ViewVehicles = () => {
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <h1 className="text-2xl font-bold mb-6">View Vehicles</h1>
-      <div className="overflow-x-auto bg-white shadow-lg rounded-lg p-4">
-        <table className="w-full border-collapse border border-gray-300">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="border border-gray-300 px-4 py-2">#</th>
-              <th className="border border-gray-300 px-4 py-2">
-                Vehicle Number
-              </th>
-              <th className="border border-gray-300 px-4 py-2">Vehicle Name</th>
-              <th className="border border-gray-300 px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {vehicles.length > 0 ? (
-              vehicles.map((vehicle, index) => (
-                <tr key={vehicle.id} className="hover:bg-gray-100">
-                  <td className="border border-gray-300 px-4 py-2 text-center">
-                    {index + 1}
-                  </td>
-                  <td className="border border-gray-300 px-4 py-2 text-center">
-                    {vehicle.vehicleNumber}
-                  </td>
-                  <td className="border border-gray-300 px-4 py-2 text-center">
-                    {vehicle.vehicleName}
-                  </td>
-                  <td className="border border-gray-300 px-4 py-2 text-center">
-                    <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
-                      <button
-                        onClick={() => handleEdit(vehicle)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg"
-                      >
-                        Edit
-                      </button>
-                      {/* <button
+      {vehiclemodel && (
+        <div className="overflow-x-auto bg-white shadow-lg rounded-lg p-4">
+          <table className="w-full border-collapse border border-gray-300">
+            <thead className="bg-gray-200">
+              <tr>
+                <th className="border border-gray-300 px-4 py-2">#</th>
+                <th className="border border-gray-300 px-4 py-2">
+                  Vehicle Number
+                </th>
+                <th className="border border-gray-300 px-4 py-2">
+                  Vehicle Name
+                </th>
+                <th className="border border-gray-300 px-4 py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {vehicles.length > 0 ? (
+                vehicles.map((vehicle, index) => (
+                  <tr key={vehicle.id} className="hover:bg-gray-100">
+                    <td className="border border-gray-300 px-4 py-2 text-center">
+                      {index + 1}
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2 text-center">
+                      {vehicle.vehicleNumber}
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2 text-center">
+                      {vehicle.vehicleName}
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2 text-center">
+                      <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
+                        <button
+                          onClick={() => handleEdit(vehicle)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg"
+                        >
+                          Edit
+                        </button>
+                        {/* <button
                         onClick={() => handleDelete(vehicle.id)}
                         className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg"
                       >
                         Delete
                       </button> */}
-                    </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className="text-center py-4">
+                    No vehicles found.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="4" className="text-center py-4">
-                  No vehicles found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
       {isEditFormVisible && (
         <div className="mt-6 bg-white p-6 shadow rounded-md">
           <h3 className="text-xl font-semibold text-gray-700 mb-4">

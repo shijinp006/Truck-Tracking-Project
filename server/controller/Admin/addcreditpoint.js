@@ -13,6 +13,8 @@ export const addCreditPoint = async (req, res) => {
   const { tripId } = req.params;
   const { credit } = req.body;
 
+  console.log(credit, "cre");
+
   // Parse and validate the credit value
   const creditPoint = Number(credit);
   if (!tripId || !credit) {

@@ -6,12 +6,14 @@ import axios from 'axios'; // Import Axios
 
 const UserLogin = () => {
   const [userId, setUserId] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Check if userId is provided
     if (!userId.trim()) {
       toast.error('UserID is required!');
       return;
@@ -24,12 +26,13 @@ const UserLogin = () => {
       // Axios POST request
       const response = await axios.post('/User/userlogin', {
         userId: userId.trim(),
+        password: password.trim(),
       });
 
       toast.dismiss('login'); // Dismiss loading toast
 
       if (response.status === 200) {
-        const { token } = response.data; // Assuming response includes the token
+        const { token } = response.data; // Extract token from response
 
         if (token) {
           // Save token to localStorage
@@ -44,51 +47,63 @@ const UserLogin = () => {
             showConfirmButton: false,
             timer: 2000,
             timerProgressBar: true,
-            willClose: () => navigate('/user/dashboard'), // Redirect to user dashboard after success
             background: '#F0F4C3',
           });
+
+          // Redirect to user dashboard
+          navigate('/user/dashboard');
         }
       }
     } catch (error) {
       toast.dismiss('login'); // Dismiss loading toast
       console.error('Login error:', error);
 
-      // Handle 404 or other errors specifically
-      if (error.response) {
-        if (error.response.status === 404) {
-          Swal.fire({
-            title: '<strong>Error!</strong>',
-            html: '<p>Invalid UserID. Please try again.</p>',
-            icon: 'error',
-            iconColor: '#F44336',
-            confirmButtonText: 'Retry',
-            confirmButtonColor: '#EF5350',
-          });
-        } else {
-          // Handle other server errors
-          Swal.fire({
-            title: '<strong>Server Error!</strong>',
-            html: '<p>Something went wrong. Please try again later.</p>',
-            icon: 'error',
-            iconColor: '#F44336',
-            confirmButtonText: 'Retry',
-            confirmButtonColor: '#EF5350',
-          });
-        }
-      } else {
-        // In case of network or other issues
-        Swal.fire({
-          title: '<strong>Error!</strong>',
-          html: '<p>Unable to reach the server. Please try again later.</p>',
-          icon: 'error',
-          iconColor: '#F44336',
-          confirmButtonText: 'Retry',
-          confirmButtonColor: '#EF5350',
-        });
-      }
+      // Handle specific errors using a reusable function
+      handleError(error);
     } finally {
       setLoading(false); // Hide loading state
     }
+  };
+
+  // Reusable error handling function
+  const handleError = (error) => {
+    if (error.response) {
+      const { status } = error.response;
+
+      if (status === 401) {
+        // Invalid password
+        showAlert('Invalid Password', 'Please try again.', 'error');
+      } else if (status === 404) {
+        // Invalid UserID
+        showAlert('Invalid UserID', 'Please try again.', 'error');
+      } else {
+        // Generic server error
+        showAlert(
+          'Server Error',
+          'Something went wrong. Please try again later.',
+          'error'
+        );
+      }
+    } else {
+      // Network or other errors
+      showAlert(
+        'Network Error',
+        'Unable to reach the server. Please check your connection.',
+        'error'
+      );
+    }
+  };
+
+  // Reusable SweetAlert2 alert function
+  const showAlert = (title, message, icon) => {
+    Swal.fire({
+      title: `<strong>${title}</strong>`,
+      html: `<p>${message}</p>`,
+      icon: icon,
+      iconColor: icon === 'error' ? '#F44336' : '#4CAF50',
+      confirmButtonText: 'Retry',
+      confirmButtonColor: '#EF5350',
+    });
   };
 
   return (
@@ -112,6 +127,24 @@ const UserLogin = () => {
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
               placeholder="UserID"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label
+              htmlFor="userId"
+              className="block text-gray-600 font-medium mb-2"
+            >
+              Enter your password
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />

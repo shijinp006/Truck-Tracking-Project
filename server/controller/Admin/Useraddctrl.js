@@ -1,5 +1,6 @@
 import { db } from "../../models/db.js";
 import ensureTableExists from "../../models/DriverCreation.js";
+import bcrypt from "bcrypt";
 
 ensureTableExists();
 
@@ -9,16 +10,18 @@ const queryAsync = async (query, params) => {
 };
 
 export const Adduser = async (req, res) => {
-  const { phoneNumber, name, licenseDoc } = req.body;
+  const { phoneNumber, name, licenseDoc, password } = req.body;
+  console.log(password, "password");
 
   try {
     // Validate required fields
-    if (!phoneNumber || !name) {
+    if (!phoneNumber || !name || !password) {
       return res.status(400).json({
         success: false,
         message: "Phone number and name are required fields.",
       });
     }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Validate phoneNumber (must be exactly 10 digits)
     if (!/^\d{10}$/.test(phoneNumber)) {
@@ -60,13 +63,14 @@ export const Adduser = async (req, res) => {
 
     // Insert the new user into the database
     const insertQuery = `
-      INSERT INTO userdetails (phoneNumber, name, licenseDoc)
-      VALUES (?, ?, ?)
+      INSERT INTO userdetails (phoneNumber, name, licenseDoc,password)
+      VALUES (?, ?, ?, ?)
     `;
     const insertResult = await queryAsync(insertQuery, [
       phoneNumber,
       name,
       licenseDoc || null, // Use null if licenseDoc is undefined or falsy
+      hashedPassword,
     ]);
 
     // Respond with success
@@ -128,7 +132,7 @@ export const getUser = async (req, res) => {
 
 export const EditUser = async (req, res) => {
   try {
-    const { name, creditpointreceived, phoneNumber } = req.body;
+    const { name, creditpointreceived, phoneNumber, password } = req.body;
     const { id } = req.params;
 
     console.log(
@@ -142,6 +146,8 @@ export const EditUser = async (req, res) => {
       id
     );
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     // Check if the user exists
     const checkUserQuery = "SELECT * FROM userdetails WHERE id = ?";
     const result = await queryAsync(checkUserQuery, [id]);
@@ -154,9 +160,15 @@ export const EditUser = async (req, res) => {
     // Update the existing user
     const updateQuery = `
       UPDATE userdetails 
-      SET name = ?, phoneNumber = ?, creditpointreceived = ? 
+      SET name = ?, phoneNumber = ?,password =?, creditpointreceived = ? 
       WHERE id = ?`;
-    await queryAsync(updateQuery, [name, phoneNumber, creditpointreceived, id]);
+    await queryAsync(updateQuery, [
+      name,
+      phoneNumber,
+      hashedPassword,
+      creditpointreceived,
+      id,
+    ]);
 
     res.status(200).json({ message: "User updated successfully." });
   } catch (error) {

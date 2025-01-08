@@ -27,6 +27,9 @@ const UserTripView = () => {
 
   const fetchTrips = async () => {
     try {
+      setLoading(true); // Show loading state
+      setError(null); // Clear any previous errors
+
       const token = localStorage.getItem('jwtToken');
       if (!token) throw new Error('User is not authenticated');
 
@@ -35,18 +38,24 @@ const UserTripView = () => {
       });
 
       if (response.data && response.data.data) {
-        setTrips(response.data.data);
+        const trips = response.data.data;
+
+        if (trips.length === 0) {
+          setError('No trips available'); // Set error to show "No trips" message
+        } else {
+          setTrips(trips); // Update the state with fetched trips
+        }
       } else {
         throw new Error('Invalid response structure');
       }
     } catch (err) {
-      setError(
-        err.response?.data?.message || err.message || 'Failed to fetch trips'
-      );
+      setError();
+      // err.response?.data?.message || err.message || 'Failed to fetch trips'
     } finally {
-      setLoading(false);
+      setLoading(false); // Hide loading state
     }
   };
+
   useEffect(() => {
     fetchTrips();
     getVehicleData();

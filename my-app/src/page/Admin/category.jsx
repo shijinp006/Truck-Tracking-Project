@@ -9,6 +9,7 @@ const Category = () => {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [categorymodel, setCategorymodel] = useState(true);
   const [isEditFormVisible, setEditFormVisible] = useState(false);
   const [editform, setEditform] = useState({
     name: '',
@@ -78,6 +79,7 @@ const Category = () => {
     setEditform(category);
     setEditFormVisible(true);
     setNewCategory(category);
+    setCategorymodel(false);
   };
 
   const handleEditChange = (e) => {
@@ -87,11 +89,13 @@ const Category = () => {
 
   const handleCancel = async () => {
     setEditFormVisible(false);
+    setCategorymodel(true);
   };
 
   const handelSavecategory = async (e, id) => {
     e.preventDefault();
     setEditFormVisible(false);
+    setCategorymodel(true);
 
     try {
       const response = await axios.put(
@@ -173,56 +177,60 @@ const Category = () => {
   return (
     <div className="flex flex-col items-center p-6">
       <Toaster position="top-right" reverseOrder={false} />
-      <div className="bg-white bg-opacity-90 shadow-lg rounded-lg w-full max-w-4xl p-6">
-        <h1 className="text-2xl font-bold text-gray-700 text-center mb-6">
-          Manage Categories
-        </h1>
+      {categorymodel && (
+        <div className="bg-white bg-opacity-90 shadow-lg rounded-lg w-full max-w-4xl p-6">
+          <h1 className="text-2xl font-bold text-gray-700 text-center mb-6">
+            Manage Categories
+          </h1>
 
-        {/* Add Category Form */}
-        <form
-          onSubmit={handleAddCategory}
-          className="flex flex-col sm:flex-row gap-4 mb-6"
-        >
-          <input
-            type="text"
-            value={newCategoryName}
-            onChange={(e) => setNewCategoryName(e.target.value)}
-            className="flex-grow border p-2 rounded shadow-sm focus:outline-none focus:ring focus:ring-gray-700"
-            placeholder="Enter new category name"
-            aria-label="New category name"
-          />
-          <button
-            type="submit"
-            className={`bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500 transition duration-200 ${
-              isSubmitting && 'opacity-50 cursor-not-allowed'
-            }`}
-            disabled={isSubmitting}
+          {/* Add Category Form */}
+          <form
+            onSubmit={handleAddCategory}
+            className="flex flex-col sm:flex-row gap-4 mb-6"
           >
-            {isSubmitting ? 'Adding...' : 'Add Category'}
-          </button>
-        </form>
+            <input
+              type="text"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              className="flex-grow border p-2 rounded shadow-sm focus:outline-none focus:ring focus:ring-gray-700"
+              placeholder="Enter new category name"
+              aria-label="New category name"
+            />
+            <button
+              type="submit"
+              className={`bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500 transition duration-200 ${
+                isSubmitting && 'opacity-50 cursor-not-allowed'
+              }`}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Adding...' : 'Add Category'}
+            </button>
+          </form>
 
-        {/* Display Categories */}
-        {loading ? (
-          <div className="text-center py-4">
-            <div className="loader border-t-4 border-gray-700 border-solid rounded-full w-8 h-8 mx-auto"></div>
-            <p className="text-gray-600 mt-2">Loading categories...</p>
-          </div>
-        ) : categories.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-gray-700 text-white">
-                  <th className="py-3 px-4 text-left">Category Name</th>
-                  <th className="py-3 px-4 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {categories.map((category) => (
-                  <tr key={category.id} className="border-b hover:bg-gray-100">
-                    <td className="py-3 px-4">{category.name}</td>
-                    <td className="py-3 px-4 flex gap-2">
-                      {/* <button
+          {/* Display Categories */}
+          {loading ? (
+            <div className="text-center py-4">
+              <div className="loader border-t-4 border-gray-700 border-solid rounded-full w-8 h-8 mx-auto"></div>
+              <p className="text-gray-600 mt-2">Loading categories...</p>
+            </div>
+          ) : categories.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-700 text-white">
+                    <th className="py-3 px-4 text-left">Category Name</th>
+                    <th className="py-3 px-4 text-left">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categories.map((category) => (
+                    <tr
+                      key={category.id}
+                      className="border-b hover:bg-gray-100"
+                    >
+                      <td className="py-3 px-4">{category.name}</td>
+                      <td className="py-3 px-4 flex gap-2">
+                        {/* <button
                         onClick={() => handleDeleteCategory(category.id)}
                         className="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500 transition duration-200"
                         aria-label={`Delete category ${category.name}`}
@@ -230,23 +238,26 @@ const Category = () => {
                         Delete
                       </button> */}
 
-                      <button
-                        onClick={() => handleEditCategory(category)}
-                        className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-500 transition duration-200"
-                        aria-label={`Edit category ${category.name}`}
-                      >
-                        Edit
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-center text-gray-600">No categories available.</p>
-        )}
-      </div>
+                        <button
+                          onClick={() => handleEditCategory(category)}
+                          className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-500 transition duration-200"
+                          aria-label={`Edit category ${category.name}`}
+                        >
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-center text-gray-600">
+              No categories available.
+            </p>
+          )}
+        </div>
+      )}
       {isEditFormVisible && (
         <div className="mt-6 bg-white p-6 shadow rounded-md">
           <h3 className="text-xl font-semibold text-gray-700 mb-4">

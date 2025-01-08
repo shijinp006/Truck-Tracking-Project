@@ -7,6 +7,8 @@ const CreateUser = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [name, setName] = useState('');
   const [licenseDoc, setLicenseDoc] = useState('');
+  const [password, setPassword] = useState('');
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -19,6 +21,7 @@ const CreateUser = () => {
         {
           phoneNumber,
           name,
+          password,
           licenseDoc,
         },
         {
@@ -71,6 +74,18 @@ const CreateUser = () => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              className="w-full p-2 border rounded-lg border-gray-300 focus:ring-2 focus:ring-gray-700"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700">
+              Password <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full p-2 border rounded-lg border-gray-300 focus:ring-2 focus:ring-gray-700"
               required
             />
