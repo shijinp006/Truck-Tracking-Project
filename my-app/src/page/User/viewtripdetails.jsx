@@ -42,19 +42,18 @@ const Alltrips = () => {
 
   const fetchFilteredTrips = async () => {
     try {
+      const token = localStorage.getItem('jwtToken');
       const response = await axios.get(`/User/filterdetails`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        params: {
-          status: statusFilter,
+        headers: { Authorization: `Bearer ${token}` },
 
+        params: {
           sortField: sortField, // E.g., 'id' or 'name'
           sortOrder: sortOrder, // Dynamically set to either 'ASC' or 'DESC'
           page: currentPage, // Pass the current page
-          limit: 10, // Set the limit per page
+          limit: 8, // Set the limit per page
         },
       });
+
       setFilteredTrips(response.data.data);
       setTotalPages(response.data.totalPages); // Set the total pages
     } catch (error) {
@@ -64,7 +63,7 @@ const Alltrips = () => {
 
   useEffect(() => {
     fetchFilteredTrips();
-  }, [statusFilter, sortField, sortOrder, currentPage]); // Trigger fetch wh
+  }, [sortField, sortOrder, currentPage]); // Trigger fetch wh
 
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= totalPages) {
@@ -97,100 +96,40 @@ const Alltrips = () => {
     fetchTrips(); // Refetch trips with the new sort order
   };
 
-  const handleUpdate = async (trip, tripId) => {
-    // Display SweetAlert2 modal with the edit form
-    const { isConfirmed, value: formValues } = await Swal.fire({
-      title: "<span style='color:#4CAF50;'>Edit Trip</span>", // Green title
-      html: `
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <label for="editName" class="swal-label">Driver Name:</label>
-          <input 
-            id="editName" 
-            type="text" 
-            class="swal-input" 
-            value="${trip?.name || ''}" 
-            placeholder="Enter driver name"
-          />
-        </div>
-      `,
-      showCancelButton: true,
-      confirmButtonText: 'Save',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#28a745', // Bright green for save button
-      cancelButtonColor: '#dc3545', // Red for cancel button
-      focusConfirm: false,
-      preConfirm: () => {
-        const name = document.getElementById('editName').value.trim();
-
-        if (!name) {
-          Swal.showValidationMessage('Driver name is required!');
-          return null;
-        }
-
-        return { name };
-      },
-      customClass: {
-        popup: 'swal-responsive-popup', // Use custom classes for styling
-        confirmButton: 'swal-confirm-btn',
-        cancelButton: 'swal-cancel-btn',
-      },
-    });
-
-    if (isConfirmed && formValues) {
-      try {
-        // Send the updated trip details to the server
-        const response = await axios.put(
-          `/User/updatedriver/${tripId}`,
-          {
-            name: formValues.name,
+  const handleUpdate = async (tripId) => {
+    try {
+      const response = await axios.put(
+        `/User/updatedriver/${tripId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('jwtToken')}`,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('jwtToken')}`,
-            },
-          }
-        );
-
-        if (response.data.success) {
-          Swal.fire({
-            icon: 'success',
-            title: "<span style='color:#4CAF50;'>Success</span>",
-            text: 'Trip updated successfully!',
-            confirmButtonColor: '#28a745',
-          });
-
-          // Update the trip details locally
-          setTripDetails((prevTrips) =>
-            prevTrips.map((t) =>
-              t.id === tripId ? { ...t, name: formValues.name } : t
-            )
-          );
-          setFilteredTrips((prevTrips) =>
-            prevTrips.map((t) =>
-              t.id === tripId ? { ...t, name: formValues.name } : t
-            )
-          );
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: "<span style='color:#dc3545;'>Error</span>",
-            text: 'User not found',
-            confirmButtonColor: '#dc3545',
-          });
         }
-      } catch (error) {
-        Swal.fire({
-          icon: 'error',
-          title: "<span style='color:#dc3545;'>Error</span>",
-          text: 'An error occurred  updating the trip. Please try again.',
-          confirmButtonColor: '#dc3545',
-        });
-        console.error('Error while updating trip:', error);
-      }
+      );
+
+      // If the update is successful, show a success message
+      await Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'The driver details have been updated successfully.',
+        confirmButtonText: 'OK',
+      });
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating driver:', error);
+
+      // Show an error message if the update fails
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text:
+          error.response?.data?.message ||
+          'Something went wrong. Please try again.',
+        confirmButtonText: 'Retry',
+      });
     }
   };
-
-  // Function to filter trips based on selected status
 
   // Component to render PDF document as an image (Canvas)
   const PDFRenderer = ({ pdfUrl }) => {
@@ -361,18 +300,17 @@ const Alltrips = () => {
                     trip.status !== 'completed' &&
                     trip.status !== 'submitted' && (
                       <button
-                        onClick={() => handleUpdate(trip, trip.id)}
+                        onClick={() => handleUpdate(trip.id)}
                         style={{
                           padding: '8px 16px',
-                          backgroundColor: '#4CAF50', // Green button for update action
+                          backgroundColor: 'orange',
                           color: 'white',
                           border: 'none',
                           borderRadius: '5px',
                           cursor: 'pointer',
-                          fontWeight: 'bold',
                         }}
                       >
-                        Update
+                        AssignTo Me
                       </button>
                     )}
                 </td>

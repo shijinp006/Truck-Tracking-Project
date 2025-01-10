@@ -143,17 +143,27 @@ export const tripComplete = async (req, res) => {
 
     // Extract parameters from request
     const { tripId } = req.params;
-    const { meterafter, fuel } = req.body;
+    const { meterafter, mileage, fuel } = req.body;
     const invoicedoc = req.files["invoicedoc"]
       ? req.files["invoicedoc"][0].filename
+      : null;
+    const invoicedoc2 = req.files["invoicedoc2"]
+      ? req.files["invoicedoc2"][0].filename
+      : null;
+    const invoicedoc3 = req.files["invoicedoc3"]
+      ? req.files["invoicedoc3"][0].filename
       : null;
     const meterafterfile = req.files["meterafterfile"]
       ? req.files["meterafterfile"][0].filename
       : null;
 
     console.log(`Trip ID: ${tripId}`);
-    console.log(` Meter After: ${meterafter}, Fuel: ${fuel}`);
+    console.log(
+      ` Meter After: ${meterafter}, Fuel: ${fuel},Mileage:${mileage}`
+    );
     console.log(`Uploaded Invoice Document: ${invoicedoc}`);
+    console.log(`Uploaded Invoice Document2: ${invoicedoc2}`);
+    console.log(`Uploaded Invoice Document3: ${invoicedoc3}`);
     console.log(`Uploaded MeterAfter file: ${meterafterfile}`);
 
     // Check if the trip exists in the database
@@ -172,8 +182,11 @@ export const tripComplete = async (req, res) => {
         SET 
          
           meterafter = ?, 
+          mileage = ?,
           fuel = ?,
           invoicedoc = ?,
+          invoicedoc2 = ?,
+          invoicedoc3 = ?,
           meterafterfile = ?,
           status = ?
         WHERE id = ?
@@ -182,8 +195,11 @@ export const tripComplete = async (req, res) => {
     const status = "completed";
     const values = [
       meterafter,
+      mileage,
       fuel,
       invoicedoc,
+      invoicedoc2,
+      invoicedoc3,
       meterafterfile,
       status,
       tripId,

@@ -20,8 +20,11 @@ const UserTripView = () => {
   });
   const [formData, setFormData] = useState({
     meterafter: '',
+    mileage: '',
     fuel: ' ',
     invoicedoc: '',
+    invoicedoc2: '',
+    invoicedoc3: '',
     meterafterfile: '',
   });
 
@@ -151,7 +154,12 @@ const UserTripView = () => {
     const { name, value, files } = e.target;
 
     // If the input is a file, we handle it differently
-    if (name === 'meterafterfile' || name === 'invoicedoc') {
+    if (
+      name === 'meterafterfile' ||
+      name === 'invoicedoc' ||
+      name === 'invoicedoc2' ||
+      name === 'invoicedoc3'
+    ) {
       setFormData((prevData) => ({
         ...prevData,
         [name]: files[0], // Store the first file from the file input
@@ -285,9 +293,11 @@ const UserTripView = () => {
     }
   };
 
-  const handleUpdateTrip = async (currentTrip) => {
+  const handleUpdateTrip = async (e, currentTrip) => {
+    e.preventDefault();
     if (
       !formData.meterafter ||
+      !formData.mileage ||
       !formData.fuel ||
       !formData.invoicedoc ||
       !formData.meterafterfile
@@ -474,61 +484,93 @@ const UserTripView = () => {
       {/* Modal for completing trip */}
       {showModal && currentTrip && (
         <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+          <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-md">
+            <h2 className="text-xl font-semibold text-gray-800 mb-3">
               Complete Trip
             </h2>
-            <form>
-              <div className="mb-4">
-                <label className="block text-gray-700">MeterAfter</label>
+            <form onSubmit={(e) => handleUpdateTrip(e, currentTrip)}>
+              <div className="mb-3">
+                <label className="block text-gray-700">Meter After</label>
                 <input
                   type="text"
                   name="meterafter"
                   value={formData.meterafter}
                   onChange={handleChange}
-                  className="mt-2 p-2 border rounded-md w-full"
+                  className="mt-1 p-2 border rounded-md w-full"
                 />
               </div>
-              <div className="mb-4">
+              <div className="mb-3">
+                <label className="block text-gray-700">Add Mileage</label>
+                <input
+                  type="text"
+                  name="mileage"
+                  value={formData.mileage}
+                  onChange={handleChange}
+                  className="mt-1 p-2 border rounded-md w-full"
+                />
+              </div>
+              <div className="mb-3">
                 <label className="block text-gray-700">Fuel</label>
                 <input
                   type="text"
                   name="fuel"
-                  value={formData.value}
+                  value={formData.fuel}
                   onChange={handleChange}
-                  className="mt-2 p-2 border rounded-md w-full"
+                  className="mt-1 p-2 border rounded-md w-full"
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700">Invoice</label>
-                <input
-                  type="file"
-                  name="invoicedoc"
-                  onChange={handleChange}
-                  className="mt-2 p-2 border rounded-md w-full"
-                />
+
+              {/* Three invoices in one line */}
+              <div className="mb-3 flex space-x-2">
+                <div className="w-1/3">
+                  <label className="block text-gray-700">Invoice</label>
+                  <input
+                    type="file"
+                    name="invoicedoc"
+                    onChange={handleChange}
+                    className="mt-1 p-2 border rounded-md w-full"
+                  />
+                </div>
+                <div className="w-1/3">
+                  <label className="block text-gray-700">Invoice2</label>
+                  <input
+                    type="file"
+                    name="invoicedoc2"
+                    onChange={handleChange}
+                    className="mt-1 p-2 border rounded-md w-full"
+                  />
+                </div>
+                <div className="w-1/3">
+                  <label className="block text-gray-700">Invoice3</label>
+                  <input
+                    type="file"
+                    name="invoicedoc3"
+                    onChange={handleChange}
+                    className="mt-1 p-2 border rounded-md w-full"
+                  />
+                </div>
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700">Meter After</label>
+
+              <div className="mb-3">
+                <label className="block text-gray-700">Meter After File</label>
                 <input
                   type="file"
                   name="meterafterfile"
                   onChange={handleChange}
-                  className="mt-2 p-2 border rounded-md w-full"
+                  className="mt-1 p-2 border rounded-md w-full"
                 />
               </div>
               <div className="flex justify-between">
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="bg-gray-500 text-white px-4 py-2 rounded"
+                  className="bg-gray-500 text-white px-3 py-2 rounded"
                 >
                   Close
                 </button>
                 <button
-                  type="button"
-                  onClick={() => handleUpdateTrip(currentTrip)}
-                  className="bg-blue-500 text-white px-4 py-2 rounded"
+                  type="submit"
+                  className="bg-blue-500 text-white px-3 py-2 rounded"
                 >
                   Submit
                 </button>
@@ -537,6 +579,7 @@ const UserTripView = () => {
           </div>
         </div>
       )}
+
       {showstarttripModel && currentTrip && (
         <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">

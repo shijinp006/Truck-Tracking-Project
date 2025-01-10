@@ -1,4 +1,7 @@
 import { db } from "../../models/db.js";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.USER_JWT_SECRET || "your_secret_key";
 
 const queryAsync = async (query, params) => {
   try {
@@ -10,30 +13,12 @@ const queryAsync = async (query, params) => {
   }
 };
 
-export const filterDetails = async (req, res) => {
-  let { status, sortField, sortOrder, page, limit } = req.query;
+export const filterusertripDetails = async (req, res) => {
+  let { sortField, sortOrder, page, limit } = req.query;
 
-  console.log("hello");
+  console.log("Fetching 'created' status trips for non-logged-in users");
 
-  // Validate status: allowed values (add more if necessary)
-  const validStatuses = [
-    "created",
-    "submitted",
-    "cancelled",
-    "completed",
-    "assigned",
-  ];
-  if (status && !validStatuses.includes(status)) {
-    return res.status(400).json({
-      success: false,
-      message: `Invalid status. Allowed values are ${validStatuses.join(
-        ", "
-      )}.`,
-    });
-  }
-
-  // Validate sortField: allowed fields (add more if necessary)
-
+  // Validate sortField: allowed fields
   const validSortFields = ["id", "name", "status", "driver", "tripmode"];
   const validSortOrders = ["ASC", "DESC"];
 
@@ -49,8 +34,6 @@ export const filterDetails = async (req, res) => {
     });
   }
 
-  // Validate sortOrder: should be "asc" or "desc"
-
   if (sortOrder && !validSortOrders.includes(sortOrder)) {
     return res.status(400).json({
       success: false,
@@ -58,7 +41,7 @@ export const filterDetails = async (req, res) => {
     });
   }
 
-  // Validate page: should be a positive integer
+  // Validate page and limit
   if (page && (isNaN(page) || parseInt(page) <= 0)) {
     return res.status(400).json({
       success: false,
@@ -66,7 +49,6 @@ export const filterDetails = async (req, res) => {
     });
   }
 
-  // Validate limit: should be a positive integer
   if (limit && (isNaN(limit) || parseInt(limit) <= 0)) {
     return res.status(400).json({
       success: false,
@@ -74,28 +56,44 @@ export const filterDetails = async (req, res) => {
     });
   }
 
-  let query = `SELECT * FROM tripdetails WHERE 1=1`;
-  const values = [];
-
-  // Add filters dynamically
-
-  if (status) {
-    query += ` AND status = ?`;
-    values.push(status);
+  // Get the JWT token from the request headers
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res
+      .status(401)
+      .json({ success: false, message: "Token is missing." });
   }
 
-  // Add sorting
-  query += ` ORDER BY ${sortBy} ${orderBy}`;
-
-  limit = limit ? parseInt(limit) : 10; // Default limit
-  const offset = (page - 1) * limit;
-
   try {
-    // Get total count of filtered results
-    const countQuery =
-      `SELECT COUNT(*) AS total FROM tripdetails WHERE 1=1` +
-      (status ? ` AND status = ?` : "");
+    // Verify the token
+    const decoded = jwt.verify(token, JWT_SECRET);
 
+    if (!decoded || !decoded.userId) {
+      console.log("Invalid token payload:", decoded);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid token payload.",
+      });
+    }
+
+    const userId = decoded.userId;
+
+    // Build the query to fetch trips that do not belong to the logged-in user
+    let query = `SELECT * FROM tripdetails WHERE status = ? AND driverId != ?`;
+    const values = ["created", userId]; // Exclude trips of the logged-in user
+
+    // Add sorting
+    query += ` ORDER BY ${sortBy} ${orderBy}`;
+
+    limit = limit ? parseInt(limit) : 10; // Default limit
+    const offset = (page - 1) * limit;
+
+    // Get total count of filtered results
+    const countQuery = `
+      SELECT COUNT(*) AS total 
+      FROM tripdetails 
+      WHERE status = ? AND driverId != ?
+    `;
     const countResults = await queryAsync(countQuery, values);
     const totalItems = countResults[0].total;
 

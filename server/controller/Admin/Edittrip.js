@@ -32,6 +32,7 @@ const editTrip = async (req, res) => {
   console.log(tripId, "id");
 
   const creditPoint = Number(credit);
+  const creditallowed = Number(credit);
   const invoicedoc = req.file ? req.file.filename : null; // Optional file upload
 
   const tripid = Number(tripId);
@@ -79,21 +80,31 @@ const editTrip = async (req, res) => {
 
     await queryAsync(updatedCreditquery, [uploadCredit, driverId]);
 
+    const Checkcreditpointhistory =
+      "SELECT * FROM creditpoint_history  WHERE tripId = ?";
+    const Checkcreditpointhistoryresult = await queryAsync(
+      Checkcreditpointhistory,
+      [tripId]
+    );
+    const updatedCredithistory = `UPDATE creditpoint_history SET 	creditCreditPoint	 = ? WHERE tripId = ?`;
+    await queryAsync(updatedCredithistory, [creditPoint, tripId]);
+    const history = Checkcreditpointhistoryresult[0];
+    console.log(history, "history");
+
     // Dynamically construct the update query
     let updateQuery = `UPDATE tripdetails SET tripfrom = ?, tripto = ?, meterbefore = ?, meterafter = ?, fuel = ?, vehiclenumber = ?, tripmode = ?, category = ?,  status = ?, name = ?, driverId = ?`;
 
     const values = [
-      tripfrom,
-      tripto,
-      meterbefore,
-      meterafter,
-      fuel,
-      vehiclenumber,
-      tripmode,
-      category,
-
-      status,
-      name,
+      tripfrom || null,
+      tripto || null,
+      meterbefore || null,
+      meterafter || null,
+      fuel || null,
+      vehiclenumber || null,
+      tripmode || null,
+      category || null,
+      status || null,
+      name || null,
       driverId,
     ];
 
@@ -107,6 +118,10 @@ const editTrip = async (req, res) => {
     if (tripMode !== "empty" && creditPoint !== undefined) {
       updateQuery += ", credit = ?";
       values.push(creditPoint);
+    }
+    if (tripMode !== "empty" && creditallowed !== undefined) {
+      updateQuery += ", creditallowed = ?";
+      values.push(creditallowed);
     }
 
     // Add WHERE condition to specify the tripId

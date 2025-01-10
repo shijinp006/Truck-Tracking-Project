@@ -18,7 +18,7 @@ import edittrip from "../server/routes/Admin/edittrip.js";
 import Category from "../server/routes/Admin/categoryrout.js";
 import Addcreditpoint from "../server/routes/Admin/creditpointroute.js";
 import filterDetails from "../server/routes/Admin/filtertripdetails.js";
-import UserfilterDetails from "../server/routes/Admin/filtertripdetails.js";
+import UserfilterDetails from "../server/routes/User/filtertripdetails.js";
 import ExcelData from "../server/routes/Admin/ExcelData.js";
 import Userstatus from "../server/routes/User/status.js";
 import cors from "cors";

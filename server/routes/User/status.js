@@ -29,6 +29,8 @@ router.post(
   userverifyToken, // Middleware to verify the user's token
   uploadMultiple.fields([
     { name: "invoicedoc", maxCount: 1 }, // Single file for "invoicedoc"
+    { name: "invoicedoc2", maxCount: 1 }, // Single file for "invoicedoc"
+    { name: "invoicedoc3", maxCount: 1 }, // Single file for "invoicedoc"
     { name: "meterafterfile", maxCount: 1 }, // Single file for "meterafterfile"
   ]),
   uploadAndCompressMultiple, // Middleware to compress uploaded images

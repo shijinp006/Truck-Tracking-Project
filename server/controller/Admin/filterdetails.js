@@ -135,15 +135,16 @@ export const filterDetails = async (req, res) => {
     const countQuery =
       `SELECT COUNT(*) AS total FROM tripdetails WHERE 1=1` +
       (status ? ` AND status = ?` : "") +
-      (tripfrom ? ` AND tripfrom = ?` : "") + // Space added before AND
-      (category ? ` AND category = ?` : "") + // Space added before AND
-      (tripto ? ` AND tripto = ?` : "") + // Space added before AND
-      (tripMode ? ` AND tripmode = ?` : "") + // Space added before AND
-      (driverName ? ` AND name = ?` : "") + // Space added before AND
-      (date ? ` AND DATE(created_at) = ?` : ""); // Space added before AND
+      (tripfrom ? ` AND TRIM(LOWER(tripfrom)) LIKE TRIM(LOWER(?))` : "") +
+      (category ? ` AND category = ?` : "") +
+      (tripto ? ` AND TRIM(LOWER(tripto)) LIKE TRIM(LOWER(?))` : "") +
+      (tripMode ? ` AND tripmode = ?` : "") +
+      (driverName ? ` AND name = ?` : "") +
+      (date ? ` AND DATE(created_at) = ?` : "");
 
     const countResults = await queryAsync(countQuery, values);
     const totalItems = countResults[0].total;
+    console.log(totalItems, "total");
 
     // Add pagination to the main query
     query += ` LIMIT ${limit} OFFSET ${offset}`;

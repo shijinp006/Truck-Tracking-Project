@@ -1,5 +1,6 @@
 import { db } from "../../models/db.js";
-
+import ensureTableExists from "../../models/creditpointhistory.js";
+ensureTableExists();
 const queryAsync = async (query, params) => {
   try {
     const [results] = await db.execute(query, params);
@@ -13,17 +14,23 @@ export const addCreditPoint = async (req, res) => {
   const { tripId } = req.params;
   const { credit } = req.body;
 
-  console.log(credit, "cre");
+  console.log(credit, "credit");
 
   // Parse and validate the credit value
   const creditPoint = Number(credit);
+  const creditallowed = Number(credit);
   if (!tripId || !credit) {
     return res
       .status(400)
       .json({ message: "Missing required parameters: tripId and/or credit" });
   }
 
-  if (isNaN(creditPoint) || creditPoint <= 0) {
+  if (
+    isNaN(creditPoint) ||
+    creditPoint <= 0 ||
+    isNaN(creditallowed) ||
+    creditallowed <= 0
+  ) {
     return res
       .status(400)
       .json({ message: "Invalid credit value. It must be a positive number." });
@@ -66,12 +73,33 @@ export const addCreditPoint = async (req, res) => {
 
     // Update the trip's credit points and status
     const updateTripQuery =
-      "UPDATE tripdetails SET  credit = ?, status = ? WHERE id = ?";
+      "UPDATE tripdetails SET  credit = ?,creditallowed = ?,status = ? WHERE id = ?";
     await queryAsync(updateTripQuery, [
       tripCredit + creditPoint,
+      tripCredit + creditallowed,
       status,
       tripId,
     ]);
+    const creditpointhistoryquery =
+      "SELECT * FROM creditpoint_history WHERE tripId = ?";
+    const creditpointhistoryqueryresults = await queryAsync(
+      creditpointhistoryquery,
+      [tripId]
+    );
+
+    if (creditpointhistoryqueryresults.length === 0) {
+      // If no existing record, insert a new credit point history
+      const insertCreditHistoryQuery =
+        "INSERT INTO creditpoint_history (driverId, tripId, creditCreditpoint, debitCreditPoint) VALUES (?, ?, ?, ?)";
+      await queryAsync(insertCreditHistoryQuery, [
+        driverId,
+        tripId,
+        creditPoint, // credit point to be added
+        0, // debit point, assuming 0 for this case
+      ]);
+    }
+    const creditpointhistor = creditpointhistoryqueryresults[0];
+    console.log(creditpointhistor, "history");
 
     // Update the driver's total credit points
     const updateDriverQuery =
@@ -96,24 +124,18 @@ export const addCreditPoint = async (req, res) => {
 
 export const getCreditpoint = async (req, res) => {
   try {
-    // Extract parameters and body
     const { id: userId } = req.params;
     const { credit } = req.body;
 
-    console.log(`Received userId: ${userId}`);
-    console.log(`Received credit point: ${credit}`);
-
-    // Validate input
     if (!userId || isNaN(Number(userId)) || isNaN(Number(credit))) {
       return res.status(400).json({
         error: "Invalid input: userId and credit must be valid numbers.",
       });
     }
 
-    // Convert credit to a number
     const creditToAdd = Number(credit);
 
-    // Fetch user details from the database
+    // Fetch user details
     const checkQuery = "SELECT * FROM userdetails WHERE id = ?";
     const [user] = await queryAsync(checkQuery, [userId]);
 
@@ -121,23 +143,16 @@ export const getCreditpoint = async (req, res) => {
       return res.status(404).json({ error: "User not found." });
     }
 
-    console.log(`User details fetched: ${JSON.stringify(user)}`);
-
-    // Update the credit in the database
     const updatedCreditReceived =
       creditToAdd + Number(user.creditpointreceived);
-    console.log(`Updated credit received: ${updatedCreditReceived}`);
 
     if (creditToAdd > user.creditpoint) {
-      console.log("f");
-
       return res.status(400).json({
-        error:
-          "Invalid input: credit to add must be greater than .Collected point",
+        error: "Invalid input: credit to add must not exceed collected points.",
       });
     }
 
-    // Update credit received in the database
+    // Update credit received
     const updateQuery =
       "UPDATE userdetails SET creditpointreceived = ? WHERE id = ?";
     const result = await queryAsync(updateQuery, [
@@ -151,14 +166,57 @@ export const getCreditpoint = async (req, res) => {
       });
     }
 
-    console.log(`Credit successfully updated for userId: ${userId}`);
+    let remainingCredit = creditToAdd;
 
-    // Send success response
-    res.status(200).json({
-      message: "Credit points updated successfully.",
+    // Fetch trips in ascending order by trip ID
+    const fetchTripsQuery = `
+      SELECT id, credit
+      FROM tripdetails 
+      WHERE driverId = ? 
+      ORDER BY id ASC
+    `;
+    const trips = await queryAsync(fetchTripsQuery, [userId]);
+
+    if (!trips.length) {
+      return res.status(404).json({
+        message: "No unclaimed trips found for the driver.",
+      });
+    }
+
+    // Iterate over trips and deduct credits
+    for (const trip of trips) {
+      if (remainingCredit <= 0) break;
+
+      const tripId = trip.id;
+      const availableCredit = trip.credit;
+
+      // Calculate the credit to claim for the current trip
+      const creditToClaim = Math.min(availableCredit, remainingCredit);
+
+      // Insert into creditpoint_history
+      const insertHistoryQuery = `
+        INSERT INTO creditpoint_history (driverId, tripId, debitCreditPoint) 
+        VALUES (?, ?, ?)
+      `;
+      await queryAsync(insertHistoryQuery, [userId, tripId, creditToClaim]);
+
+      // Update the trip's remaining credit
+      const updateTripCreditQuery = `
+        UPDATE tripdetails SET credit = credit - ? WHERE id = ?
+      `;
+      await queryAsync(updateTripCreditQuery, [creditToClaim, tripId]);
+
+      // Deduct the claimed credit from remaining credit
+      remainingCredit -= creditToClaim;
+    }
+
+    // Final response
+    return res.status(200).json({
+      message: "Credit points claimed successfully.",
       data: {
         userId,
-        updatedCreditReceived,
+        claimedCredit: creditToAdd,
+        remainingCredit,
       },
     });
   } catch (error) {

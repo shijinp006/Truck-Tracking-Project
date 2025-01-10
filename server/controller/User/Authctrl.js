@@ -34,13 +34,13 @@ const checkUser = async (req, res) => {
 
     // Query to check if the user exists and fetch the hashed password
     const userQuery =
-      "SELECT id, name, password FROM userdetails WHERE name = ?";
+      "SELECT id, phoneNumber, password FROM userdetails WHERE phoneNumber = ?";
     const user = await queryAsync(userQuery, [userId]);
 
     if (user.length > 0) {
       const userDetails = {
         userId: user[0].id,
-        username: user[0].name,
+        username: user[0].phoneNumber,
         password: user[0].password, // Hashed password from database
       };
 

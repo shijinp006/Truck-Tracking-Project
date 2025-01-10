@@ -3,7 +3,7 @@ import express from "express";
 import {
   createTrip,
   // getTrips,
-  deleteTrip,
+  // deleteTrip,
   tripCancel,
   ViewTripDetails,
 } from "../../controller/Admin/createtrip.js";
@@ -17,7 +17,7 @@ router.post("/createtrip", verifyToken, createTrip);
 
 router.get("/viewtrips/:tripId", verifyToken, ViewTripDetails);
 
-router.delete("/deletetrip/:id", verifyToken, deleteTrip);
+// router.delete("/deletetrip/:id", verifyToken, deleteTrip);
 
 router.post("/tripcancel/:id", verifyToken, tripCancel);
 

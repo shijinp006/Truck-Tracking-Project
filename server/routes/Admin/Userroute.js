@@ -6,7 +6,7 @@ import {
   Adduser,
   getUser,
   EditUser,
-  deleteUser,
+  // deleteUser,
 } from "../../controller/Admin/Useraddctrl.js"; // Import Adduser function
 import verifyToken from "../../middleware/authMiddleware.js";
 
@@ -16,6 +16,6 @@ router.get("/getuser", verifyToken, getUser);
 
 router.put("/edituser/:id", verifyToken, EditUser);
 
-router.delete("/deleteuser/:id", verifyToken, deleteUser);
+// router.delete("/deleteuser/:id", verifyToken, deleteUser);
 
 export default router; // Use export default for ES6 modules

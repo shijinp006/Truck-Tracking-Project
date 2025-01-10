@@ -145,77 +145,77 @@ export const createTrip = async (req, res) => {
 //   }
 // };
 
-export const deleteTrip = async (req, res) => {
-  const id = req.params.id; // Correct way to access trip ID from URL
+// export const deleteTrip = async (req, res) => {
+//   const id = req.params.id; // Correct way to access trip ID from URL
 
-  const tripId = Number(id);
+//   const tripId = Number(id);
 
-  if (typeof tripId !== "number" || isNaN(tripId) || tripId <= 0) {
-    res
-      .status(400)
-      .json({ error: "Invalid tripId. It must be a positive number." });
-    return;
-  }
+//   if (typeof tripId !== "number" || isNaN(tripId) || tripId <= 0) {
+//     res
+//       .status(400)
+//       .json({ error: "Invalid tripId. It must be a positive number." });
+//     return;
+//   }
 
-  const query = "SELECT * FROM tripdetails WHERE id = ?";
-  const tripExists = await queryAsync(query, [tripId]);
+//   const query = "SELECT * FROM tripdetails WHERE id = ?";
+//   const tripExists = await queryAsync(query, [tripId]);
 
-  if (tripExists.length === 0) {
-    return res.status(404).json({
-      success: false,
-      message: "Trip not found.",
-    });
-  }
-  const trip = tripExists[0];
-  const existingtripCredit = trip.credit;
-  const driverId = trip.driverId;
+//   if (tripExists.length === 0) {
+//     return res.status(404).json({
+//       success: false,
+//       message: "Trip not found.",
+//     });
+//   }
+//   const trip = tripExists[0];
+//   const existingtripCredit = trip.credit;
+//   const driverId = trip.driverId;
 
-  console.log(driverId, "drivercjss");
+//   console.log(driverId, "drivercjss");
 
-  const checkDriverQuery = "SELECT * FROM userdetails WHERE id = ?";
-  const driverExists = await queryAsync(checkDriverQuery, [driverId]);
-  console.log(driverExists, "dfdsf");
+//   const checkDriverQuery = "SELECT * FROM userdetails WHERE id = ?";
+//   const driverExists = await queryAsync(checkDriverQuery, [driverId]);
+//   console.log(driverExists, "dfdsf");
 
-  if (driverExists.length === 0) {
-    // Driver does not exist
-    return res.status(404).json({ message: "Driver not found." });
-  }
+//   if (driverExists.length === 0) {
+//     // Driver does not exist
+//     return res.status(404).json({ message: "Driver not found." });
+//   }
 
-  const driverCredit = driverExists[0].creditpoint;
-  console.log(driverCredit, "driverCredit");
+//   const driverCredit = driverExists[0].creditpoint;
+//   console.log(driverCredit, "driverCredit");
 
-  // Ensure driver has enough credit to cancel the trip
-  // if (driverCredit < existingtripCredit) {
-  //   return res.status(400).json({
-  //     message: "Driver does not have enough credit to cancel the trip.",
-  //   });
-  // }
+//   // Ensure driver has enough credit to cancel the trip
+//   // if (driverCredit < existingtripCredit) {
+//   //   return res.status(400).json({
+//   //     message: "Driver does not have enough credit to cancel the trip.",
+//   //   });
+//   // }
 
-  // Calculate the new credit for the driver
-  const updatedCredit = driverCredit - existingtripCredit;
-  console.log(updatedCredit, "updated credit");
+//   // Calculate the new credit for the driver
+//   const updatedCredit = driverCredit - existingtripCredit;
+//   console.log(updatedCredit, "updated credit");
 
-  // Update the driver's credit
-  const updateDriverQuery =
-    "UPDATE userdetails SET creditpoint = ? WHERE id = ?";
-  await queryAsync(updateDriverQuery, [updatedCredit, driverId]);
+//   // Update the driver's credit
+//   const updateDriverQuery =
+//     "UPDATE userdetails SET creditpoint = ? WHERE id = ?";
+//   await queryAsync(updateDriverQuery, [updatedCredit, driverId]);
 
-  const deleteTripQuery = "DELETE FROM tripdetails WHERE id = ?";
+//   const deleteTripQuery = "DELETE FROM tripdetails WHERE id = ?";
 
-  try {
-    await queryAsync(deleteTripQuery, [tripId]);
-    return res.status(200).json({
-      success: true,
-      message: "Trip deleted successfully",
-    });
-  } catch (error) {
-    console.error("Error deleting Trip:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to delete Trip",
-    });
-  }
-};
+//   try {
+//     await queryAsync(deleteTripQuery, [tripId]);
+//     return res.status(200).json({
+//       success: true,
+//       message: "Trip deleted successfully",
+//     });
+//   } catch (error) {
+//     console.error("Error deleting Trip:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Failed to delete Trip",
+//     });
+//   }
+// };
 
 export const tripCancel = async (req, res) => {
   const id = req.params.id;

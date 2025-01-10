@@ -118,7 +118,7 @@ const CreateTrip = () => {
       {/* Light gray background color */}
       <form
         onSubmit={handleSubmit}
-        className="p-6 max-w-3xl mx-auto bg-blue-300 shadow-lg rounded-lg"
+        className="p-6 max-w-3xl mx-auto bg-gray-400 shadow-lg rounded-lg"
       >
         <h1 className="text-xl font-bold mb-6 text-gray-800">Create Trip</h1>
 

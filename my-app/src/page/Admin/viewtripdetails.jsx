@@ -433,6 +433,7 @@ const ViewTripDetails = () => {
 
         // Close the modal
         setShowModal(false);
+        window.location.reload();
       } else {
         // Show warning if something goes wrong
         Swal.fire(
@@ -524,6 +525,7 @@ const ViewTripDetails = () => {
           timer: 3000,
           showConfirmButton: false,
         });
+        window.location.reload();
       } else {
         Swal.fire({
           title: 'Error!',
@@ -942,7 +944,7 @@ const ViewTripDetails = () => {
                     <td style={{ padding: '10px' }}>{trip.name}</td>
                     <td style={{ padding: '10px' }}>{trip.tripfrom}</td>
                     <td style={{ padding: '10px' }}>{trip.tripto}</td>
-                    <td style={{ padding: '10px' }}>{trip.credit}</td>
+                    <td style={{ padding: '10px' }}>{trip.creditallowed}</td>
                     <td style={{ padding: '10px' }}>{trip.tripmode}</td>
                     <td style={{ padding: '10px' }}>{trip.category}</td>
                     <td style={{ padding: '10px' }}>{trip.status}</td>
@@ -1092,7 +1094,7 @@ const ViewTripDetails = () => {
               <strong>KM</strong> {ViewTrip.meterafter - ViewTrip.meterbefore}
             </p>
             <p className="text-sm">
-              <strong>Mileage:</strong> {ViewTrip.Mileage}
+              <strong>Mileage:</strong> {ViewTrip.mileage}
             </p>
             <p className="text-sm">
               <strong>Credit Point:</strong> {ViewTrip.credit || '0'}
@@ -1163,7 +1165,7 @@ const ViewTripDetails = () => {
               <button
                 type="button"
                 onClick={() => handleEdit(ViewTrip)}
-                className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded shadow"
+                className={`bg-blue-500 hover:bg-blue-600 text-white ${ViewTrip.status === 'completed' ? 'text-sm px-2 py-1' : 'text-base px-3 py-1'} rounded shadow`}
               >
                 Edit
               </button>
@@ -1171,7 +1173,7 @@ const ViewTripDetails = () => {
                 <button
                   type="button"
                   onClick={() => handleCancel(ViewTrip.id)}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-3 py-1 rounded shadow"
+                  className={`bg-yellow-500 hover:bg-yellow-600 text-white ${ViewTrip.status === 'completed' ? 'text-sm px-2 py-1' : 'text-base px-3 py-1'} rounded shadow`}
                 >
                   Cancel
                 </button>
@@ -1188,7 +1190,7 @@ const ViewTripDetails = () => {
               <button
                 type="button"
                 onClick={handleClosetripModal}
-                className="bg-gray-500 hover:bg-gray-600 text-white text-sm px-3 py-1 rounded shadow"
+                className={`bg-gray-500 hover:bg-gray-600 text-white ${ViewTrip.status === 'completed' ? 'text-sm px-2 py-1' : 'text-base px-3 py-1'} rounded shadow`}
               >
                 Close
               </button>
@@ -1197,7 +1199,7 @@ const ViewTripDetails = () => {
                 <button
                   type="button"
                   onClick={() => handleCompleted(ViewTrip.id)}
-                  className="mt-4  bg-red-400  text-white px-4 py-2 rounded shadow"
+                  className={`mt-4 bg-red-400 text-white ${ViewTrip.status === 'completed' ? 'text-sm px-3 py-1' : 'text-base px-3 py-1'} rounded shadow`}
                 >
                   Add Credit
                 </button>

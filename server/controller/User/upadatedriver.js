@@ -1,5 +1,7 @@
 import { db } from "../../models/db.js";
+import jwt from "jsonwebtoken";
 
+const JWT_SECRET = process.env.USER_JWT_SECRET || "your_secret_key";
 const queryAsync = async (query, params) => {
   try {
     const [results] = await db.execute(query, params);
@@ -12,7 +14,33 @@ const queryAsync = async (query, params) => {
 const updatedriver = async (req, res) => {
   try {
     const { tripId } = req.params;
-    const { name } = req.body;
+
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Token is missing.",
+      });
+    }
+
+    // Verify token
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    if (!decoded || !decoded.userId) {
+      console.log("Invalid token payload:", decoded);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid token payload.",
+      });
+    }
+
+    const userId = decoded.userId;
+
+    // Fetch user details
+    const checkQuery = "SELECT * FROM userdetails WHERE id = ?";
+    console.log("Executing query:", checkQuery, "with params:", [userId]);
+    const results = await queryAsync(checkQuery, [userId]);
+    const name = results[0].name;
 
     if (!tripId || !name) {
       return res.status(400).json({
