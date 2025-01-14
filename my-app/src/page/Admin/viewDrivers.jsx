@@ -499,7 +499,7 @@ const ViewDrivers = () => {
               />
             </div>
 
-            <div className="mb-4">
+            {/* <div className="mb-4">
               <label
                 htmlFor="creditpointreceived"
                 className="block text-sm font-medium text-gray-700"
@@ -514,7 +514,7 @@ const ViewDrivers = () => {
                 onChange={handleEditChange}
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md"
               />
-            </div>
+            </div> */}
 
             <div className="flex items-center justify-end gap-4">
               <button

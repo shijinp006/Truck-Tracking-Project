@@ -132,21 +132,21 @@ export const getUser = async (req, res) => {
 
 export const EditUser = async (req, res) => {
   try {
-    const { name, creditpointreceived, phoneNumber } = req.body;
+    const { name, phoneNumber } = req.body;
     const { id } = req.params;
 
     // Validate input data
-    if (!id || !name || !phoneNumber || creditpointreceived == null) {
+    if (!id || isNaN(Number(id)) || !name || !phoneNumber) {
       return res.status(400).json({
-        message: "Invalid input. Please provide all required fields.",
+        message:
+          "Invalid input. Please provide a valid ID, name, and phone number.",
       });
     }
 
     console.log("Updating user with details:", {
+      userId: id,
       name,
       phoneNumber,
-      creditpointreceived,
-      userId: id,
     });
 
     // Check if the user exists
@@ -160,69 +160,19 @@ export const EditUser = async (req, res) => {
     // Update the user details
     const updateUserQuery = `
       UPDATE userdetails 
-      SET name = ?, phoneNumber = ?, creditpointreceived = ? 
+      SET name = ?, phoneNumber = ?
       WHERE id = ?
     `;
-    await queryAsync(updateUserQuery, [
-      name,
-      phoneNumber,
-      creditpointreceived,
-      id,
-    ]);
+    await queryAsync(updateUserQuery, [name, phoneNumber, id]);
 
-    let remainingCredit = parseFloat(creditpointreceived);
-    if (remainingCredit <= 0) {
-      return res.status(200).json({ message: "User updated successfully." });
-    }
-
-    // Fetch trips in descending order by trip ID
-    const fetchTripsQuery = `
-      SELECT id, credit, creditallowed 
-      FROM tripdetails 
-      WHERE driverId = ? 
-      ORDER BY id DESC
-    `;
-    const trips = await queryAsync(fetchTripsQuery, [id]);
-    console.log(trips, "tr");
-
-    if (!trips.length) {
-      return res.status(200).json({
-        message: "User updated successfully. No unclaimed trips found.",
-      });
-    }
-
-    // Iterate over trips and deduct credits
-    for (const trip of trips) {
-      if (remainingCredit <= 0) break;
-      const tripId = trip.id;
-
-      const allowedCredit = parseFloat(trip.creditallowed);
-      console.log(allowedCredit, "allow");
-
-      // Calculate the credit to claim for the current trip
-      const creditToClaim = Math.min(allowedCredit, remainingCredit);
-
-      // Insert into creditpoint_history with debitCreditPoint
-      const insertHistoryQuery = `
-        INSERT INTO creditpoint_history (driverId, tripId, debitCreditPoint) 
-        VALUES (?, ?, ?)
-      `;
-      await queryAsync(insertHistoryQuery, [id, tripId, creditToClaim]);
-
-      // Deduct the claimed credit from remaining credit
-      remainingCredit -= creditToClaim;
-      const updateTripCreditQuery = `
-      UPDATE tripdetails 
-      SET credit = ? 
-      WHERE id = ?
-    `;
-      await queryAsync(updateTripCreditQuery, [creditToClaim, tripId]);
-    }
-
-    res.status(200).json({ message: "User updated successfully." });
+    // Success response
+    return res.status(200).json({
+      message: "User details updated successfully.",
+      updatedUser: { id, name, phoneNumber },
+    });
   } catch (error) {
-    console.error("Error in EditUser:", error.message);
-    res.status(500).json({
+    console.error("Error in EditUser:", error);
+    return res.status(500).json({
       message: "An error occurred while editing the user.",
       error: error.message,
     });
