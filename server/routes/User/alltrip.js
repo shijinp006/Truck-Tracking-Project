@@ -16,7 +16,7 @@ router.get("/getusertrip", userverifyToken, getUserTrip);
 router.put("/updatedriver/:tripId", userverifyToken, updatedriver);
 router.get("/getalltrips", userverifyToken, getTrips);
 router.get("/getprofile", userverifyToken, myprofile);
-router.get("/getvehicle", userverifyToken, getVehicle);
+router.get("/getvehicle", getVehicle);
 router.get("/filterdusertrip", userverifyToken, getUserfilterTrip);
 
 export default router;

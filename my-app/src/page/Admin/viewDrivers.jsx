@@ -158,12 +158,11 @@ const ViewDrivers = () => {
   };
 
   const handleEditSubmit = async (e, id) => {
-    e.preventDefualt;
+    e.preventDefault(); // Correct event handling
     setEditFormVisible(false);
     setDrivermodel(true);
 
     try {
-      // Check for the token
       const token = localStorage.getItem('token');
       if (!token) {
         await Swal.fire({
@@ -174,7 +173,17 @@ const ViewDrivers = () => {
         return;
       }
 
-      // Show confirmation dialog
+      // Validate phone number (exactly 10 digits)
+      const { phoneNumber } = editform;
+      if (!/^\d{10}$/.test(phoneNumber)) {
+        await Swal.fire({
+          icon: 'error',
+          title: 'Invalid Phone Number',
+          text: 'Please enter a valid 10-digit phone number.',
+        });
+        return;
+      }
+
       const result = await Swal.fire({
         title: 'Are you sure?',
         text: 'Do you want to save the changes?',
@@ -185,12 +194,8 @@ const ViewDrivers = () => {
         confirmButtonText: 'Yes, save it!',
       });
 
-      if (!result.isConfirmed) {
-        // User canceled the operation
-        return;
-      }
+      if (!result.isConfirmed) return;
 
-      // Make API call to update the user
       const response = await axios.put(`/Admin/edituser/${id}`, editform, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -198,9 +203,7 @@ const ViewDrivers = () => {
         },
       });
 
-      // Handle the response
       if (response.status === 200) {
-        // Update the specific user details in the state
         setUsers((prevUsers) =>
           prevUsers.map((user) =>
             user.id === id ? { ...user, ...editform } : user
@@ -227,24 +230,27 @@ const ViewDrivers = () => {
       if (error.response) {
         const { status, data } = error.response;
 
-        if (status === 401) {
-          await Swal.fire({
-            icon: 'error',
-            title: 'Unauthorized',
-            text: 'Your session has expired. Please log in again.',
-          });
-        } else if (status === 500) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Server Error',
-            text: 'An internal server error occurred. Please try again later.',
-          });
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: data.message || 'An unknown error occurred.',
-          });
+        switch (status) {
+          case 401:
+            await Swal.fire({
+              icon: 'error',
+              title: 'Unauthorized',
+              text: 'Your session has expired. Please log in again.',
+            });
+            break;
+          case 500:
+            Swal.fire({
+              icon: 'error',
+              title: 'Server Error',
+              text: 'An internal server error occurred. Please try again later.',
+            });
+            break;
+          default:
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message || 'An unknown error occurred.',
+            });
         }
       } else if (error.request) {
         Swal.fire({

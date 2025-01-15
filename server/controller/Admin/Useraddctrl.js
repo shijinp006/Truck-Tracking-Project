@@ -143,6 +143,14 @@ export const EditUser = async (req, res) => {
       });
     }
 
+    // Validate phone number length and numeric value
+    if (!/^\d{10}$/.test(phoneNumber)) {
+      return res.status(400).json({
+        message:
+          "Invalid phone number. Please provide a valid 10-digit phone number.",
+      });
+    }
+
     console.log("Updating user with details:", {
       userId: id,
       name,

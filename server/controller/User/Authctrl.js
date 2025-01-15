@@ -53,8 +53,8 @@ const checkUser = async (req, res) => {
       // Generate JWT token (token expires in 1 hour)
       const token = jwt.sign(
         { userId: userDetails.userId, username: userDetails.username },
-        secretKey,
-        { expiresIn: "1h" }
+        secretKey
+        // { expiresIn: "5h" }
       );
 
       // Respond with token and success message

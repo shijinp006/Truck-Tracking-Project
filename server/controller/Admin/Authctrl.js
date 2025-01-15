@@ -59,8 +59,8 @@ const login = async (req, res) => {
     // Generate a JWT token
     const token = jwt.sign(
       { userId: admin.id, email: admin.signupEmail },
-      secretKey,
-      { expiresIn: "9h" }
+      secretKey
+      // { expiresIn: "5h" }
     );
 
     return res.status(200).json({
