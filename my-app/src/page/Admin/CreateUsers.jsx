@@ -39,13 +39,26 @@ const CreateUser = () => {
       setPhoneNumber('');
       setLicenseDoc('');
     } catch (error) {
-      // Show error notification
-      toast.error(
-        `Failed to create user: ${
-          error.response ? error.response.data.message : error.message
-        }`
-      );
-      navigate('/admin/create-user'); // Redirect to create-user on error
+      if (error.response?.status === 401) {
+        // Handle token expiration
+        toast.error('Session expired. Redirecting to login page...');
+        localStorage.removeItem('token'); // Clear the invalid token
+
+        // Redirect to login and reload the page
+        setTimeout(() => {
+          window.location.href = '/'; // Replace with your login page route
+        }, 3000); // Allow time for the message to display
+      } else {
+        // Show error notification for other errors
+        toast.error(
+          `Failed to create user: ${
+            error.response ? error.response.data.message : error.message
+          }`
+        );
+
+        // Redirect to the create-user page on error
+        navigate('/admin/create-user'); // Adjust the route if necessary
+      }
     }
   };
 

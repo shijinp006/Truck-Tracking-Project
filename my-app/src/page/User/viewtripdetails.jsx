@@ -23,7 +23,7 @@ const Alltrips = () => {
     axios
       .get(`/User/getalltrips`, {
         headers: { Authorization: `Bearer ${token}` },
-      }) // Adjust URL if necessary
+      })
       .then((response) => {
         if (response.data.success) {
           setTripDetails(response.data.data);
@@ -36,6 +36,24 @@ const Alltrips = () => {
         }
       })
       .catch((error) => {
+        if (error.response && error.response.status === 401) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Session Expired',
+            text: 'Your session has expired. Please log in again.',
+          }).then(() => {
+            localStorage.removeItem('jwtToken'); // Clear token
+            setTimeout(() => {
+              window.location.href = '/user'; // Redirect to the login page
+            }, 2000); // Wait for 2 seconds to display the message
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while fetching trip details.',
+          });
+        }
         console.error('Error fetching trip details:', error);
       });
   }, []);
@@ -43,9 +61,12 @@ const Alltrips = () => {
   const fetchFilteredTrips = async () => {
     try {
       const token = localStorage.getItem('jwtToken');
+      if (!token) {
+        throw new Error('No token found'); // Handle missing token
+      }
+
       const response = await axios.get(`/User/filterdetails`, {
         headers: { Authorization: `Bearer ${token}` },
-
         params: {
           sortField: sortField, // E.g., 'id' or 'name'
           sortOrder: sortOrder, // Dynamically set to either 'ASC' or 'DESC'
@@ -57,7 +78,25 @@ const Alltrips = () => {
       setFilteredTrips(response.data.data);
       setTotalPages(response.data.totalPages); // Set the total pages
     } catch (error) {
-      console.error('Error fetching trips:', error);
+      if (error.response && error.response.status === 401) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: 'Your session has expired. Please log in again.',
+        }).then(() => {
+          localStorage.removeItem('jwtToken'); // Clear token
+          setTimeout(() => {
+            window.location.href = '/user'; // Redirect to the login page
+          }, 2000); // Wait for 2 seconds to display the message
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'An error occurred while fetching trip details.',
+        });
+        console.error('Error fetching trips:', error);
+      }
     }
   };
 
@@ -117,17 +156,30 @@ const Alltrips = () => {
       });
       window.location.reload();
     } catch (error) {
+      if (error.response && error.response.status === 401) {
+        // Token has expired
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: 'Your session has expired. Please log in again.',
+          confirmButtonText: 'Login',
+        });
+        localStorage.removeItem('jwtToken'); // Clear token
+        setTimeout(() => {
+          window.location.href = '/user'; // Redirect to the login page
+        }, 2000); // Wait for 2 seconds to display the message
+      } else {
+        // Show an error message for other issues
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text:
+            error.response?.data?.message ||
+            'Something went wrong. Please try again.',
+          confirmButtonText: 'Retry',
+        });
+      }
       console.error('Error updating driver:', error);
-
-      // Show an error message if the update fails
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text:
-          error.response?.data?.message ||
-          'Something went wrong. Please try again.',
-        confirmButtonText: 'Retry',
-      });
     }
   };
 

@@ -20,10 +20,24 @@ const ViewVehicles = () => {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-      }) // Adjust the endpoint based on your API
+      })
       .then((response) => setVehicles(response.data.data))
+      .catch(async (error) => {
+        // Handle token expiration (401 status)
+        if (error.response?.status === 401) {
+          await Swal.fire({
+            icon: 'error',
+            title: 'Session Expired',
+            text: '❌ Your session has expired. Please log in again.',
+          });
 
-      .catch((error) => console.error('Error fetching vehicles:', error));
+          // Redirect to login page after the alert
+          window.location.href = '/'; // Adjust the path to your login page
+        } else {
+          // Log other errors
+          console.error('Error fetching vehicles:', error);
+        }
+      });
   }, []);
 
   const handleEdit = (vehicle) => {
@@ -73,13 +87,26 @@ const ViewVehicles = () => {
     } catch (error) {
       console.error('Error updating vehicle:', error);
 
-      Swal.fire({
-        icon: 'error',
-        title: 'Error updating vehicle',
-        text: 'An error occurred while updating the vehicle. Please try again later.',
-        confirmButtonText: 'OK',
-        timer: 3000,
-      });
+      // Check if the error is due to token expiration (401 Unauthorized)
+      if (error.response?.status === 401) {
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: '❌ Your session has expired. Please log in again.',
+        });
+
+        // Redirect to login page after the alert
+        window.location.href = '/'; // Adjust the path to your login page
+      } else {
+        // Show error notification for other errors
+        Swal.fire({
+          icon: 'error',
+          title: 'Error updating vehicle',
+          text: 'An error occurred while updating the vehicle. Please try again later.',
+          confirmButtonText: 'OK',
+          timer: 3000,
+        });
+      }
     }
   };
 
@@ -93,52 +120,52 @@ const ViewVehicles = () => {
     setVehiclemodel(true);
   };
 
-  const handleDelete = async (id) => {
-    // Show a confirmation dialog before proceeding with deletion
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'This action cannot be undone.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'No, cancel',
-    });
+  // const handleDelete = async (id) => {
+  //   // Show a confirmation dialog before proceeding with deletion
+  //   const result = await Swal.fire({
+  //     title: 'Are you sure?',
+  //     text: 'This action cannot be undone.',
+  //     icon: 'warning',
+  //     showCancelButton: true,
+  //     confirmButtonText: 'Yes, delete it!',
+  //     cancelButtonText: 'No, cancel',
+  //   });
 
-    if (result.isConfirmed) {
-      try {
-        // Proceed with the deletion if the user confirms
-        const response = await axios.delete(`/Admin/deleteVehicle/${id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
+  //   if (result.isConfirmed) {
+  //     try {
+  //       // Proceed with the deletion if the user confirms
+  //       const response = await axios.delete(`/Admin/deleteVehicle/${id}`, {
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem('token')}`,
+  //         },
+  //       });
 
-        // Optimistically update the vehicle list
-        setVehicles((prevVehicle) =>
-          prevVehicle.filter((vehicle) => vehicle.id !== id)
-        );
+  //       // Optimistically update the vehicle list
+  //       setVehicles((prevVehicle) =>
+  //         prevVehicle.filter((vehicle) => vehicle.id !== id)
+  //       );
 
-        // Show success alert after deletion
-        Swal.fire({
-          icon: 'success',
-          title: 'Vehicle deleted!',
-          text: 'The vehicle has been deleted successfully.',
-          confirmButtonText: 'OK',
-          timer: 3000,
-        });
-      } catch (error) {
-        console.error(error);
+  //       // Show success alert after deletion
+  //       Swal.fire({
+  //         icon: 'success',
+  //         title: 'Vehicle deleted!',
+  //         text: 'The vehicle has been deleted successfully.',
+  //         confirmButtonText: 'OK',
+  //         timer: 3000,
+  //       });
+  //     } catch (error) {
+  //       console.error(error);
 
-        // Show error alert if the deletion fails
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'An error occurred while deleting the vehicle. Please try again later.',
-          confirmButtonText: 'OK',
-        });
-      }
-    }
-  };
+  //       // Show error alert if the deletion fails
+  //       Swal.fire({
+  //         icon: 'error',
+  //         title: 'Error',
+  //         text: 'An error occurred while deleting the vehicle. Please try again later.',
+  //         confirmButtonText: 'OK',
+  //       });
+  //     }
+  //   }
+  // };
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">

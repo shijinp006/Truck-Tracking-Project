@@ -19,9 +19,18 @@ const MyProfile = () => {
         setProfile(response.data.data[0]); // Assuming you only have one user
         setLoading(false);
       } catch (err) {
-        setError(
-          err.response ? err.response.data.message : 'An error occurred'
-        );
+        if (err.response && err.response.status === 401) {
+          // Token expired or user not authenticated
+          setError('Session expired. Please log in again.');
+          localStorage.removeItem('jwtToken'); // Clear the token
+          setTimeout(() => {
+            window.location.href = '/user'; // Redirect to the login page
+          }, 2000); // Wait for 2 seconds to display the message
+        } else {
+          setError(
+            err.response ? err.response.data.message : 'An error occurred'
+          );
+        }
         setLoading(false);
       }
     };

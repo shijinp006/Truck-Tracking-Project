@@ -79,30 +79,92 @@ const ViewTripDetails = () => {
       });
 
       setFilteredTrips(response.data.data);
-
       setTripDetails(response.data.data);
       setTotalPages(response.data.totalPages); // Set the total pages
     } catch (error) {
-      console.error('Error fetching trips:', error);
+      if (error.response && error.response.status === 401) {
+        // Handle token expiration
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: '❌ Your session has expired. Please log in again.',
+        });
+
+        // Redirect to login page after the alert
+        window.location.href = '/'; // Adjust with your login page path
+      } else {
+        // Handle other errors
+        console.error('Error fetching trips:', error);
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'An error occurred while fetching the trips. Please try again.',
+        });
+      }
     }
   };
 
   const getcategory = async () => {
-    const response = await axios.get(`/Admin/getcategory`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
-    setCategories(response.data.data);
-  };
+    try {
+      const response = await axios.get(`/Admin/getcategory`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
 
+      setCategories(response.data.data);
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        // Handle token expiration
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: '❌ Your session has expired. Please log in again.',
+        });
+
+        // Redirect to login page after the alert
+        window.location.href = '/'; // Adjust with your login page path
+      } else {
+        // Handle other errors
+        console.error('Error fetching categories:', error);
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'An error occurred while fetching the categories. Please try again.',
+        });
+      }
+    }
+  };
   const getvehicles = async () => {
-    const response = await axios.get(`/Admin/getVehicle`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
-    setVehicles(response.data.data);
+    try {
+      const response = await axios.get(`/Admin/getVehicle`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      setVehicles(response.data.data);
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        // Handle token expiration
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: '❌ Your session has expired. Please log in again.',
+        });
+
+        // Redirect to login page after the alert
+        window.location.href = '/'; // Adjust with your login page path
+      } else {
+        // Handle other errors
+        console.error('Error fetching vehicles:', error);
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'An error occurred while fetching vehicles. Please try again.',
+        });
+      }
+    }
   };
   useEffect(() => {
     // Fetch trip details
@@ -124,8 +186,26 @@ const ViewTripDetails = () => {
           console.log('No user details found');
         }
       })
-      .catch((userError) => {
-        console.error('Error fetching user details:', userError);
+      .catch(async (userError) => {
+        if (userError.response && userError.response.status === 401) {
+          // Token expired or unauthorized
+          await Swal.fire({
+            icon: 'error',
+            title: 'Session Expired',
+            text: '❌ Your session has expired. Please log in again.',
+          });
+
+          // Redirect to login page after the alert
+          window.location.href = '/'; // Adjust with your login page path
+        } else {
+          // Handle other errors
+          console.error('Error fetching user details:', userError);
+          await Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while fetching user details. Please try again.',
+          });
+        }
       });
   }, [sortField, sortOrder, currentPage]);
 
@@ -184,7 +264,20 @@ const ViewTripDetails = () => {
       }
     } catch (error) {
       console.error('Error exporting to Excel:', error.message);
-      alert('An error occurred while exporting to Excel. Please try again.');
+
+      if (error.response && error.response.status === 401) {
+        // Token expired or unauthorized
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: '❌ Your session has expired. Please log in again.',
+        });
+
+        // Redirect to login page after the alert
+        window.location.href = '/'; // Adjust with your login page path
+      } else {
+        alert('An error occurred while exporting to Excel. Please try again.');
+      }
     }
   };
 
@@ -214,6 +307,7 @@ const ViewTripDetails = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
+
       console.log(response, 'res');
 
       if (response.status === 200) {
@@ -222,7 +316,25 @@ const ViewTripDetails = () => {
       }
     } catch (error) {
       console.error('Error fetching trip details:', error);
-      // Optionally: Handle the error (e.g., show an alert or message)
+
+      if (error.response && error.response.status === 401) {
+        // Token expired or unauthorized
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: '❌ Your session has expired. Please log in again.',
+        });
+
+        // Redirect to login page after the alert
+        window.location.href = '/'; // Adjust with your login page path
+      } else {
+        // Handle other types of errors
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'An error occurred while fetching trip details. Please try again.',
+        });
+      }
     }
   };
   console.log(ViewTrip, 'vie');
@@ -267,7 +379,6 @@ const ViewTripDetails = () => {
         });
 
         // Update the trip status in the UI
-
         setFilteredTrips((prev) =>
           prev.map((trip) =>
             trip.id === id ? { ...trip, status: 'cancelled' } : trip
@@ -289,21 +400,33 @@ const ViewTripDetails = () => {
         });
       }
     } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error!',
-        text: 'Failed to cancel trip.',
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000,
-        background: '#dc3545', // Red background for error
-        color: 'white',
-      });
-      console.error('Error cancelling trip:', error);
+      if (error.response && error.response.status === 401) {
+        // Handle token expiration
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: '❌ Your session has expired. Please log in again.',
+        });
+
+        // Redirect to login page after the alert
+        window.location.href = '/'; // Adjust with your login page path
+      } else {
+        // Handle other errors
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Failed to cancel trip. Please try again.',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          background: '#dc3545', // Red background for error
+          color: 'white',
+        });
+        console.error('Error cancelling trip:', error);
+      }
     }
   };
-
   // const handleDelete = async (id) => {
   //   const result = await Swal.fire({
   //     title: 'Are you sure?',
@@ -448,24 +571,37 @@ const ViewTripDetails = () => {
         error.response?.data || error.message
       );
 
-      // Check for the specific empty trip mode error
-      if (
-        error.response?.status === 400 &&
-        error.response?.data?.message ===
-          'Cannot add credit points for an empty trip mode.'
-      ) {
-        Swal.fire(
-          'Error!',
-          'Empty trip mode: Cannot add credit points.',
-          'error'
-        );
+      // Check for token expiration (401 status code)
+      if (error.response?.status === 401) {
+        // Handle token expiration
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: '❌ Your session has expired. Please log in again.',
+        });
+
+        // Redirect to login page after the alert
+        window.location.href = '/'; // Adjust with your login page path
       } else {
-        // Show error notification for other errors
-        Swal.fire(
-          'Error!',
-          'Failed to add credit points. Please try again.',
-          'error'
-        );
+        // Check for the specific empty trip mode error
+        if (
+          error.response?.status === 400 &&
+          error.response?.data?.message ===
+            'Cannot add credit points for an empty trip mode.'
+        ) {
+          Swal.fire(
+            'Error!',
+            'Empty trip mode: Cannot add credit points.',
+            'error'
+          );
+        } else {
+          // Show error notification for other errors
+          Swal.fire(
+            'Error!',
+            'Failed to add credit points. Please try again.',
+            'error'
+          );
+        }
       }
     }
   };
@@ -486,6 +622,7 @@ const ViewTripDetails = () => {
     e.preventDefault(); // Prevent the default form submission
     setEditshowmodel(false);
     setTripmodel(true);
+
     try {
       Swal.fire({
         title: 'Updating Trip Details...',
@@ -539,15 +676,26 @@ const ViewTripDetails = () => {
       const errorMessage =
         error.response?.data?.message || 'An unexpected error occurred.';
 
-      Swal.fire({
-        title: 'Error!',
-        text: errorMessage,
-        icon: 'error',
-        timer: 3000,
-        showConfirmButton: false,
-      });
+      // Check if token has expired (status 401)
+      if (error.response?.status === 401) {
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: '❌ Your session has expired. Please log in again.',
+        });
 
-      console.error('Error updating trip:', error);
+        // Redirect to login page after the alert
+        window.location.href = '/'; // Adjust the path to your login page
+      } else {
+        Swal.fire({
+          title: 'Error!',
+          text: errorMessage,
+          icon: 'error',
+          timer: 3000,
+          showConfirmButton: false,
+        });
+        console.error('Error updating trip:', error);
+      }
     }
   };
 

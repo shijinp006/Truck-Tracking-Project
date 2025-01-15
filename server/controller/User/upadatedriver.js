@@ -1,7 +1,7 @@
 import { db } from "../../models/db.js";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.USER_JWT_SECRET || "your_secret_key";
+const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
 const queryAsync = async (query, params) => {
   try {
     const [results] = await db.execute(query, params);

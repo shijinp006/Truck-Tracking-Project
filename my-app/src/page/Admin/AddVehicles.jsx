@@ -16,6 +16,7 @@ const AddVehicle = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
       await axios.post('/Admin/addvehicle', vehicleData, {
         headers: {
@@ -26,12 +27,24 @@ const AddVehicle = () => {
       toast.success('🚛 Vehicle added successfully!', { duration: 3000 });
       setVehicleData({ vehicleNumber: '', vehicleName: '' });
     } catch (error) {
-      toast.error(
-        '❌ Error adding vehicle! Please check if the vehicle already exists.',
-        {
+      if (error.response && error.response.status === 401) {
+        // Handle token expiration
+        toast.error('❌ Session expired. Please log in again.', {
           duration: 3000,
-        }
-      );
+        });
+        localStorage.removeItem('token'); // Clear the invalid token
+        // Redirect to login page
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 3000); // Wait for the toast to finish before redirecting
+      } else {
+        toast.error(
+          '❌ Error adding vehicle! Please check if the vehicle already exists.',
+          {
+            duration: 3000,
+          }
+        );
+      }
     } finally {
       setLoading(false);
     }

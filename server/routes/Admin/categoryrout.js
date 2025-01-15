@@ -1,7 +1,7 @@
 import {
   createCategory,
   getCategory,
-  deleteCategory,
+  // deleteCategory,
   editCategory,
 } from "../../controller/Admin/category.js";
 import express from "express";
@@ -16,7 +16,7 @@ router.post("/addCategory", verifyToken, createCategory);
 router.get("/getcategory", verifyToken, getCategory);
 
 //delete categories route
-router.delete("/deletecategory/:id", verifyToken, deleteCategory);
+// router.delete("/deletecategory/:id", verifyToken, deleteCategory);
 
 // edit category
 router.put("/editcategory/:id", verifyToken, editCategory);

@@ -52,8 +52,29 @@ const UserTripView = () => {
         throw new Error('Invalid response structure');
       }
     } catch (err) {
-      setError();
-      // err.response?.data?.message || err.message || 'Failed to fetch trips'
+      if (err.response && err.response.status === 401) {
+        // Token has expired
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: 'Your session has expired. Please log in again.',
+          confirmButtonText: 'Login',
+        });
+        localStorage.removeItem('jwtToken'); // Clear token
+        setTimeout(() => {
+          window.location.href = '/user'; // Redirect to the login page
+        }, 2000); // Wait for 2 seconds to display the message
+      } else {
+        // Handle other errors
+        setError(
+          err.response?.data?.message || err.message || 'Failed to fetch trips'
+        );
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: err.response?.data?.message || 'Failed to fetch trips.',
+        });
+      }
     } finally {
       setLoading(false); // Hide loading state
     }
@@ -66,7 +87,17 @@ const UserTripView = () => {
 
   const fetchFilteredTrips = async () => {
     const token = localStorage.getItem('jwtToken');
-    if (!token) throw new Error('User is not authenticated');
+
+    if (!token) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Unauthorized',
+        text: 'User is not authenticated. Please log in.',
+        confirmButtonText: 'Login',
+      });
+      window.location.href = '/user'; // Redirect to login page
+      return;
+    }
 
     try {
       const response = await axios.get(`/User/filterdusertrip`, {
@@ -81,6 +112,26 @@ const UserTripView = () => {
       // Log the response data here, since it's inside the try block
       console.log(response.data, 'sd');
     } catch (error) {
+      if (error.response && error.response.status === 401) {
+        // Token has expired
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: 'Your session has expired. Please log in again.',
+          confirmButtonText: 'Login',
+        });
+        localStorage.removeItem('jwtToken'); // Clear token
+        setTimeout(() => {
+          window.location.href = '/user'; // Redirect to the login page
+        }, 2000); // Wait for 2 seconds to display the message
+      } else {
+        // Handle other errors
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.response?.data?.message || 'Failed to fetch trips.',
+        });
+      }
       console.error('Error fetching trips:', error);
     }
   };
@@ -106,25 +157,31 @@ const UserTripView = () => {
   const getVehicleData = async () => {
     try {
       // Retrieve the token from localStorage
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('jwtToken');
 
       // Check if the token exists
       if (!token) {
-        throw new Error('Authorization token is missing. Please log in again.');
+        await Swal.fire({
+          icon: 'error',
+          title: 'Unauthorized',
+          text: 'Authorization token is missing. Please log in again.',
+          confirmButtonText: 'Login',
+        });
+        window.location.href = '/user'; // Redirect to login page
+        return;
       }
 
       // Make the API call to fetch vehicle data
       const response = await axios.get('/User/getvehicle', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log(response, 'res');
 
       // Handle successful response
       if (response.data && response.data.data) {
         setVehicles(response.data.data);
       }
+
       if (response.status === 200) {
-        console.log(setVehicles, 'setveh');
         console.log('Vehicle data fetched successfully:', response.data);
         return response.data; // Return the data if needed
       } else {
@@ -133,20 +190,34 @@ const UserTripView = () => {
       }
     } catch (error) {
       // Handle errors with the API call or token issues
+      if (error.response && error.response.status === 401) {
+        // Token has expired
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: 'Your session has expired. Please log in again.',
+          confirmButtonText: 'Login',
+        });
+        localStorage.removeItem('jwtToken'); // Clear expired token
+        setTimeout(() => {
+          window.location.href = '/user'; // Redirect to the login page
+        }, 2000); // Wait for 2 seconds to display the message
+      } else {
+        // Handle other errors
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text:
+            error.response?.data?.message ||
+            error.message ||
+            'An unexpected error occurred.',
+        });
+      }
+
       console.error(
         'Error fetching vehicle data:',
         error.response?.data || error.message
       );
-
-      // Display an error message to the user (SweetAlert or other UI alert method)
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text:
-          error.response?.data?.message ||
-          error.message ||
-          'An unexpected error occurred.',
-      });
     }
   };
 
@@ -192,7 +263,17 @@ const UserTripView = () => {
   const handleCancelTrip = async (trip) => {
     try {
       const token = localStorage.getItem('jwtToken');
-      if (!token) throw new Error('Token not found');
+
+      if (!token) {
+        await Swal.fire({
+          icon: 'error',
+          title: 'Unauthorized',
+          text: 'You are not logged in. Please log in again.',
+          confirmButtonText: 'Login',
+        });
+        window.location.href = '/user'; // Redirect to login page
+        return;
+      }
 
       // Cancel the trip
       await axios.post(
@@ -205,18 +286,38 @@ const UserTripView = () => {
 
       // Update the trips state to remove the canceled trip
       setFilteredTrips((prev) =>
-        prev.map((trip) =>
-          trip.id === trip.id ? { ...trip, status: ' pending' } : trip
-        )
+        prev.map((t) => (t.id === trip.id ? { ...t, status: 'pending' } : t))
       );
 
       // Show success alert
+      await Swal.fire({
+        icon: 'success',
+        title: 'Trip Canceled',
+        text: 'The trip has been successfully canceled.',
+        confirmButtonText: 'OK',
+      });
     } catch (err) {
-      Swal.fire(
-        'Error',
-        err.response?.data?.message || err.message || 'Failed to cancel trip',
-        'error'
-      );
+      if (err.response && err.response.status === 401) {
+        // Token has expired
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: 'Your session has expired. Please log in again.',
+          confirmButtonText: 'Login',
+        });
+        localStorage.removeItem('jwtToken'); // Clear expired token
+        setTimeout(() => {
+          window.location.href = '/user'; // Redirect to the login page
+        }, 2000); // Wait for 2 seconds to display the message
+      } else {
+        // Handle other errors
+        Swal.fire(
+          'Error',
+          err.response?.data?.message || err.message || 'Failed to cancel trip',
+          'error'
+        );
+      }
+      console.error('Error canceling trip:', err.response?.data || err.message);
     }
   };
 
@@ -232,12 +333,14 @@ const UserTripView = () => {
     try {
       const token = localStorage.getItem('jwtToken');
       if (!token) {
-        Swal.fire({
+        await Swal.fire({
           icon: 'error',
           title: 'Authorization Error',
           text: 'Authorization token not found. Please log in.',
+          confirmButtonText: 'Login',
         });
-        throw new Error('Authorization token not found. Please log in.');
+        window.location.href = '/login'; // Redirect to login page
+        return;
       }
 
       const formData = new FormData();
@@ -262,13 +365,26 @@ const UserTripView = () => {
         text: 'The trip has been saved successfully!',
       });
 
+      // Update state to reflect the trip's new status
       setFilteredTrips((prev) =>
         prev.map((trip) =>
           trip.id === tripId ? { ...trip, status: 'inprogress' } : trip
         )
       );
     } catch (error) {
-      if (
+      if (error.response?.status === 401) {
+        // Token has expired
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: 'Your session has expired. Please log in again.',
+          confirmButtonText: 'Login',
+        });
+        localStorage.removeItem('jwtToken'); // Clear expired token
+        setTimeout(() => {
+          window.location.href = '/user'; // Redirect to the login page
+        }, 2000); // Wait for 2 seconds to display the message
+      } else if (
         error.response?.status === 400 &&
         error.response?.data?.message === 'meterbeforefile is missing'
       ) {
@@ -284,12 +400,11 @@ const UserTripView = () => {
           text:
             error.response?.data?.message ||
             error.message ||
-            'An error occurred.',
+            'An unexpected error occurred.',
         });
       }
 
       console.error('Error saving trip:', error.message || error);
-      throw error;
     }
   };
 
@@ -321,11 +436,27 @@ const UserTripView = () => {
       await Swal.fire('Success', 'Trip marked as completed!', 'success');
       window.location.reload();
     } catch (err) {
-      Swal.fire(
-        'Error',
-        err.response?.data?.message || err.message || 'Failed to complete trip',
-        'error'
-      );
+      if (err.response?.status === 401) {
+        // Token has expired or is invalid
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: 'Your session has expired. Please log in again.',
+          confirmButtonText: 'Login',
+        });
+        localStorage.removeItem('jwtToken'); // Remove expired token
+        setTimeout(() => {
+          window.location.href = '/user'; // Redirect to the login page
+        }, 2000); // Wait for 2 seconds to display the message
+      } else {
+        Swal.fire(
+          'Error',
+          err.response?.data?.message ||
+            err.message ||
+            'Failed to complete trip',
+          'error'
+        );
+      }
     }
   };
 

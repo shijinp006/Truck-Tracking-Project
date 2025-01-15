@@ -27,9 +27,9 @@ const AdminDashboard = () => {
     window.location.href = '/';
   };
 
-  const handleLinkClick = () => {
-    setSidebarOpen(false); // Close the sidebar
-  };
+  // const handleLinkClick = () => {
+  //   setSidebarOpen(false); // Close the sidebar
+  // };
 
   const renderSection = () => {
     switch (location.pathname) {

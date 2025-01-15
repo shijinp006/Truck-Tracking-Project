@@ -46,7 +46,23 @@ const CreateTrip = () => {
         if (categoriesRes.data.success) setCategories(categoriesRes.data.data);
         if (vehiclesRes.data.success) setVehicles(vehiclesRes.data.data);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        if (error.response && error.response.status === 401) {
+          // Token expired or unauthorized
+          Swal.fire({
+            icon: 'error',
+            title: 'Session expired',
+            text: 'Your session has expired. Please log in again.',
+            showConfirmButton: false,
+            timer: 3000,
+          });
+
+          // Redirect to login page
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 3000); // Delay for the alert
+        } else {
+          console.error('Error fetching data:', error);
+        }
       }
     };
 
@@ -99,17 +115,34 @@ const CreateTrip = () => {
         });
       }
     } catch (error) {
-      console.error(
-        'Error creating trip:',
-        error.response?.data || error.message
-      );
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text:
-          error.response?.data?.message ||
-          'There was an error creating the trip.',
-      });
+      if (error.response?.status === 401) {
+        // Token expired or unauthorized
+        Swal.fire({
+          icon: 'error',
+          title: 'Session expired',
+          text: 'Your session has expired. Please log in again.',
+          showConfirmButton: false,
+          timer: 3000,
+        });
+        localStorage.removeItem('token'); // Clear the invalid token
+        window.location
+          // Redirect to login page
+          .setTimeout(() => {
+            window.location.href = '/'; // Adjust the login path as needed
+          }, 3000); // Delay to display the message before redirecting
+      } else {
+        console.error(
+          'Error creating trip:',
+          error.response?.data || error.message
+        );
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text:
+            error.response?.data?.message ||
+            'There was an error creating the trip.',
+        });
+      }
     }
   };
 

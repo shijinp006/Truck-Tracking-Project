@@ -18,6 +18,7 @@ const Category = () => {
   // Fetch categories from the backend
   useEffect(() => {
     const fetchCategories = async () => {
+      setLoading(true); // Ensure the loading state is set properly
       try {
         const { data } = await axios.get('/Admin/getcategory', {
           headers: {
@@ -28,7 +29,19 @@ const Category = () => {
           setCategories(data.data);
         }
       } catch (error) {
-        console.error('Error:', error);
+        if (error.response && error.response.status === 401) {
+          // Handle token expiration
+          toast.error('❌ Session expired. Please log in again.', {
+            duration: 3000,
+          });
+
+          // Redirect to login page
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 3000); // Delay to allow the toast message to be visible
+        } else {
+          console.error('Error fetching categories:', error);
+        }
       } finally {
         setLoading(false);
       }
@@ -40,6 +53,7 @@ const Category = () => {
   // Handle adding a new category
   const handleAddCategory = async (e) => {
     e.preventDefault();
+
     if (!newCategoryName.trim()) {
       toast.error('Please enter a valid category name.');
       return;
@@ -68,8 +82,21 @@ const Category = () => {
         toast.error(data.message || 'Failed to add category.');
       }
     } catch (error) {
-      toast.error('An error occurred while adding the category.');
-      console.error('Error:', error);
+      if (error.response && error.response.status === 401) {
+        // Handle token expiration
+        toast.error('❌ Session expired. Please log in again.', {
+          duration: 3000,
+        });
+        localStorage.removeItem('token'); // Clear the invalid token
+
+        // Redirect to login page
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 3000); // Delay to show the toast message
+      } else {
+        toast.error('An error occurred while adding the category.');
+        console.error('Error:', error);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -119,11 +146,11 @@ const Category = () => {
         });
 
         // Immediately update the category in the state
-        setCategories((prevCategories) => {
-          return prevCategories.map((category) =>
+        setCategories((prevCategories) =>
+          prevCategories.map((category) =>
             category.id === id ? { ...category, name: editform.name } : category
-          );
-        });
+          )
+        );
       } else {
         Swal.fire({
           icon: 'error',
@@ -133,46 +160,63 @@ const Category = () => {
       }
     } catch (error) {
       console.error('Error updating category:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'An error occurred',
-        text: 'There was an issue updating the category. Please try again.',
-      });
+
+      if (error.response && error.response.status === 401) {
+        // Token expired or unauthorized
+        Swal.fire({
+          icon: 'error',
+          title: 'Session expired',
+          text: 'Your session has expired. Please log in again.',
+          showConfirmButton: false,
+          timer: 3000,
+        });
+        localStorage.removeItem('token'); // Clear the invalid token
+        // Redirect to login page
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 3000); // Delay to show the message before redirecting
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'An error occurred',
+          text: 'There was an issue updating the category. Please try again.',
+        });
+      }
     }
   };
 
   // Handle deleting a category
-  const handleDeleteCategory = async (id) => {
-    const confirm = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'This action cannot be undone.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!',
-    });
+  // const handleDeleteCategory = async (id) => {
+  //   const confirm = await Swal.fire({
+  //     title: 'Are you sure?',
+  //     text: 'This action cannot be undone.',
+  //     icon: 'warning',
+  //     showCancelButton: true,
+  //     confirmButtonColor: '#3085d6',
+  //     cancelButtonColor: '#d33',
+  //     confirmButtonText: 'Yes, delete it!',
+  //   });
 
-    if (confirm.isConfirmed) {
-      try {
-        const { data } = await axios.delete(`/Admin/deletecategory/${id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        if (data.success) {
-          toast.success('Category deleted successfully.');
-          setCategories((prev) =>
-            prev.filter((category) => category.id !== id)
-          );
-        } else {
-          toast.error(data.message || 'Failed to delete category.');
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    }
-  };
+  //   if (confirm.isConfirmed) {
+  //     try {
+  //       const { data } = await axios.delete(`/Admin/deletecategory/${id}`, {
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem('token')}`,
+  //         },
+  //       });
+  //       if (data.success) {
+  //         toast.success('Category deleted successfully.');
+  //         setCategories((prev) =>
+  //           prev.filter((category) => category.id !== id)
+  //         );
+  //       } else {
+  //         toast.error(data.message || 'Failed to delete category.');
+  //       }
+  //     } catch (error) {
+  //       console.error('Error:', error);
+  //     }
+  //   }
+  // };
 
   return (
     <div className="flex flex-col items-center p-6">

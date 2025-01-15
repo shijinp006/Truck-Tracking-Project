@@ -18,6 +18,15 @@ const userverifyToken = (req, res, next) => {
     next();
   } catch (error) {
     console.log(error);
+
+    if (error.name === "TokenExpiredError") {
+      // Handle token expiration
+      return res.status(401).json({
+        message: "Session expired. Please log in again.",
+      });
+    }
+
+    // Handle other token-related errors
     res.status(400).json({ message: "Invalid token, please log in again." });
   }
 };

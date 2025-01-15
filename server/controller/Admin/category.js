@@ -73,44 +73,44 @@ export const getCategory = async (req, res) => {
 };
 
 // Delete a category
-export const deleteCategory = async (req, res) => {
-  const { id: id } = req.params;
-  const categoryId = Number(id);
+// export const deleteCategory = async (req, res) => {
+//   const { id: id } = req.params;
+//   const categoryId = Number(id);
 
-  if (typeof categoryId !== "number" || isNaN(categoryId) || categoryId <= 0) {
-    // Handle invalid id
-    console.error("Invalid id: It should be a positive number.");
-  }
+//   if (typeof categoryId !== "number" || isNaN(categoryId) || categoryId <= 0) {
+//     // Handle invalid id
+//     console.error("Invalid id: It should be a positive number.");
+//   }
 
-  console.log(categoryId, "id");
+//   console.log(categoryId, "id");
 
-  // Check if the category exists in the database
-  const checkCategoryQuery = "SELECT id FROM categories WHERE id = ?";
-  const category = await queryAsync(checkCategoryQuery, [categoryId]);
+//   // Check if the category exists in the database
+//   const checkCategoryQuery = "SELECT id FROM categories WHERE id = ?";
+//   const category = await queryAsync(checkCategoryQuery, [categoryId]);
 
-  if (category.length === 0) {
-    return res.status(404).json({
-      success: false,
-      message: "Category not found",
-    });
-  }
+//   if (category.length === 0) {
+//     return res.status(404).json({
+//       success: false,
+//       message: "Category not found",
+//     });
+//   }
 
-  // Delete the category if it exists
-  const deleteCategoryQuery = "DELETE FROM categories WHERE id = ?";
-  try {
-    await queryAsync(deleteCategoryQuery, [categoryId]);
-    return res.status(200).json({
-      success: true,
-      message: "Category deleted successfully",
-    });
-  } catch (error) {
-    console.error("Error deleting category:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to delete category",
-    });
-  }
-};
+//   // Delete the category if it exists
+//   const deleteCategoryQuery = "DELETE FROM categories WHERE id = ?";
+//   try {
+//     await queryAsync(deleteCategoryQuery, [categoryId]);
+//     return res.status(200).json({
+//       success: true,
+//       message: "Category deleted successfully",
+//     });
+//   } catch (error) {
+//     console.error("Error deleting category:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Failed to delete category",
+//     });
+//   }
+// };
 
 export const editCategory = async (req, res) => {
   try {

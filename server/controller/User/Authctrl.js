@@ -54,7 +54,7 @@ const checkUser = async (req, res) => {
       const token = jwt.sign(
         { userId: userDetails.userId, username: userDetails.username },
         secretKey,
-        { expiresIn: "1h" }
+        { expiresIn: "24h" }
       );
 
       // Respond with token and success message
