@@ -94,12 +94,12 @@ const ViewTripDetails = () => {
         window.location.href = '/'; // Adjust with your login page path
       } else {
         // Handle other errors
-        console.error('Error fetching trips:', error);
-        await Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'An error occurred while fetching the trips. Please try again.',
-        });
+        // console.error('Error fetching trips:', error);
+        // await Swal.fire({
+        //   icon: 'error',
+        //   title: 'Error',
+        //   text: 'An error occurred while fetching the trips. Please try again.',
+        // });
       }
     }
   };
@@ -773,7 +773,9 @@ const ViewTripDetails = () => {
               >
                 <option value="">All</option>
                 <option value="created">Created</option>
-                <option value="completed">Completed</option>
+                <option value="waiting for approval">
+                  Waiting for Approval
+                </option>
                 <option value="cancelled">Cancelled</option>
                 <option value="assigned">Assigned</option>
                 <option value="submitted">Submitted</option>
@@ -1071,7 +1073,19 @@ const ViewTripDetails = () => {
                     <td style={{ padding: '10px' }}>{trip.creditallowed}</td>
                     <td style={{ padding: '10px' }}>{trip.tripmode}</td>
                     <td style={{ padding: '10px' }}>{trip.category}</td>
-                    <td style={{ padding: '10px' }}>{trip.status}</td>
+                    <td
+                      style={{
+                        padding: '10px',
+                        color:
+                          trip.status === 'waiting for approval'
+                            ? 'red'
+                            : trip.status === 'submitted'
+                              ? 'green'
+                              : 'black',
+                      }}
+                    >
+                      {trip.status}
+                    </td>
                     <td
                       style={{ padding: '10px', display: 'flex', gap: '5px' }}
                     >
@@ -1289,43 +1303,26 @@ const ViewTripDetails = () => {
               <button
                 type="button"
                 onClick={() => handleEdit(ViewTrip)}
-                className={`bg-blue-500 hover:bg-blue-600 text-white ${ViewTrip.status === 'completed' ? 'text-sm px-2 py-1' : 'text-base px-3 py-1'} rounded shadow`}
+                className="w-20 h-10 bg-blue-500 hover:bg-blue-600 text-white text-base rounded shadow"
               >
                 Edit
               </button>
-              {ViewTrip.status !== 'submitted' && (
-                <button
-                  type="button"
-                  onClick={() => handleCancel(ViewTrip.id)}
-                  className={`bg-yellow-500 hover:bg-yellow-600 text-white ${ViewTrip.status === 'completed' ? 'text-sm px-2 py-1' : 'text-base px-3 py-1'} rounded shadow`}
-                >
-                  Cancel
-                </button>
-              )}
-              {/* {ViewTrip.status !== 'submitted' && (
-                // <button
-                //   type="button"
-                //   onClick={() => handleDelete(ViewTrip.id)}
-                //   className="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1 rounded shadow"
-                // >
-                //   Delete
-                // </button>
-              )} */}
+
               <button
                 type="button"
                 onClick={handleClosetripModal}
-                className={`bg-gray-500 hover:bg-gray-600 text-white ${ViewTrip.status === 'completed' ? 'text-sm px-2 py-1' : 'text-base px-3 py-1'} rounded shadow`}
+                className="w-20 h-10 bg-gray-500 hover:bg-gray-600 text-white text-base rounded shadow"
               >
                 Close
               </button>
 
-              {ViewTrip.status === 'completed' && (
+              {ViewTrip.status === 'waiting for approval' && (
                 <button
                   type="button"
                   onClick={() => handleCompleted(ViewTrip.id)}
-                  className={`mt-4 bg-red-400 text-white ${ViewTrip.status === 'completed' ? 'text-sm px-3 py-1' : 'text-base px-3 py-1'} rounded shadow`}
+                  className="w-20 h-10 bg-red-400 hover:bg-red-500 text-white text-base rounded shadow"
                 >
-                  Add Credit
+                  Approval
                 </button>
               )}
             </div>
@@ -1563,7 +1560,9 @@ const ViewTripDetails = () => {
                   <option value="assiagned">Assiagned</option>
                   <option value="submitted">Submitted</option>
                   <option value="inprogress">Inprogress</option>
-                  <option value="completed">Completed</option>
+                  <option value="waiting for approval">
+                    Waiting for Approval
+                  </option>
                   {/* Add more options dynamically if needed */}
                 </select>
               </div>

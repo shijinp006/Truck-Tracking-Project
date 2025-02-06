@@ -30,7 +30,7 @@ export const filterDetails = async (req, res) => {
     "created",
     "submitted",
     "cancelled",
-    "completed",
+    "waiting for approval",
     "assigned",
   ];
   if (status && !validStatuses.includes(status)) {

@@ -492,7 +492,7 @@ const UserTripView = () => {
           >
             <option value="">All</option>
             <option value="created">Created</option>
-            <option value="completed">completed</option>
+            <option value="waiting for approval">Waiting for approval</option>
             <option value="cancelled">cancelled</option>
             <option value="assigned">assigned</option>
             <option value="submitted">submitted</option>
@@ -560,7 +560,7 @@ const UserTripView = () => {
                           </>
                         )}
 
-                        {trip.status !== 'completed' &&
+                        {trip.status !== 'waiting for approval' &&
                           trip.status !== 'inprogress' &&
                           trip.status !== 'submitted' && (
                             <button
@@ -571,7 +571,7 @@ const UserTripView = () => {
                             </button>
                           )}
 
-                        {trip.status === 'completed' && (
+                        {trip.status === 'waiting for approval' && (
                           <span className="text-green-600 text-sm">
                             Trip Completed
                           </span>

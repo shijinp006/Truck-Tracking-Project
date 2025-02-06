@@ -349,7 +349,7 @@ const Alltrips = () => {
                 <td style={{ padding: '10px', border: '1px solid #ddd' }}>
                   {/* Only show "Update" button if status is not "Assigned" or "Completed" */}
                   {trip.status !== 'assigned' &&
-                    trip.status !== 'completed' &&
+                    trip.status !== 'waiting for approval' &&
                     trip.status !== 'submitted' && (
                       <button
                         onClick={() => handleUpdate(trip.id)}
