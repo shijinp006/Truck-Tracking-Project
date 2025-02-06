@@ -18,7 +18,13 @@ import userverifyToken from "../../middleware/userMiddleware.js";
 router.post(
   "/tripassigned/:tripId",
   userverifyToken,
-  upload.single("meterbeforefile"),
+  uploadMultiple.fields([
+    {
+      name: "meterbeforefile",
+      maxCount: 1,
+    },
+    { name: "fuelinstockfile", maxCount: 1 },
+  ]),
   uploadAndCompress,
   tripAssigned
 );
@@ -28,6 +34,10 @@ router.post(
   "/completeTrip/:tripId",
   userverifyToken, // Middleware to verify the user's token
   uploadMultiple.fields([
+    { name: "filledfuelfile", maxCount: 1 },
+    { name: "filledfuelfile2", maxCount: 1 },
+    { name: "mileagefile", maxCount: 1 },
+    { name: "mileagefile2", maxCount: 1 },
     { name: "invoicedoc", maxCount: 1 }, // Single file for "invoicedoc"
     { name: "invoicedoc2", maxCount: 1 }, // Single file for "invoicedoc"
     { name: "invoicedoc3", maxCount: 1 }, // Single file for "invoicedoc"

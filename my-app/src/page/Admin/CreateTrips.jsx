@@ -7,6 +7,7 @@ const CreateTrip = () => {
   const [drivers, setDrivers] = useState([]);
   const [categories, setCategories] = useState([]);
   const [vehicles, setVehicles] = useState([]); // Added state for vehicles
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     tripfrom: '',
     tripto: '',
@@ -75,8 +76,6 @@ const CreateTrip = () => {
       setVehicles([]);
     };
   }, []);
-
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;

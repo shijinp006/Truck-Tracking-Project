@@ -15,13 +15,19 @@ const UserTripView = () => {
 
   const [savetrip, setsavetrip] = useState({
     meterbefore: '',
+    fuelinstock: '',
     vehiclenumber: '',
     meterbeforefile: '',
+    fuelinstockfile: '',
   });
   const [formData, setFormData] = useState({
     meterafter: '',
     mileage: '',
     fuel: ' ',
+    filledfuelfile: '',
+    filledfuelfile2: '',
+    mileagefile: '',
+    mileagefile2: '',
     invoicedoc: '',
     invoicedoc2: '',
     invoicedoc3: '',
@@ -64,16 +70,6 @@ const UserTripView = () => {
         setTimeout(() => {
           window.location.href = '/user'; // Redirect to the login page
         }, 2000); // Wait for 2 seconds to display the message
-      } else {
-        // Handle other errors
-        setError(
-          err.response?.data?.message || err.message || 'Failed to fetch trips'
-        );
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: err.response?.data?.message || 'Failed to fetch trips.',
-        });
       }
     } finally {
       setLoading(false); // Hide loading state
@@ -124,15 +120,7 @@ const UserTripView = () => {
         setTimeout(() => {
           window.location.href = '/user'; // Redirect to the login page
         }, 2000); // Wait for 2 seconds to display the message
-      } else {
-        // Handle other errors
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: error.response?.data?.message || 'Failed to fetch trips.',
-        });
       }
-      console.error('Error fetching trips:', error);
     }
   };
 
@@ -202,16 +190,6 @@ const UserTripView = () => {
         setTimeout(() => {
           window.location.href = '/user'; // Redirect to the login page
         }, 2000); // Wait for 2 seconds to display the message
-      } else {
-        // Handle other errors
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text:
-            error.response?.data?.message ||
-            error.message ||
-            'An unexpected error occurred.',
-        });
       }
 
       console.error(
@@ -229,7 +207,11 @@ const UserTripView = () => {
       name === 'meterafterfile' ||
       name === 'invoicedoc' ||
       name === 'invoicedoc2' ||
-      name === 'invoicedoc3'
+      name === 'invoicedoc3' ||
+      name === 'filledfuelfile' ||
+      name === 'filledfuelfile2' ||
+      name === 'mileagefile' ||
+      name === 'mileagefile2'
     ) {
       setFormData((prevData) => ({
         ...prevData,
@@ -245,10 +227,11 @@ const UserTripView = () => {
   };
 
   const handleTripChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value, files, type } = e.target;
+
     setsavetrip((prevState) => ({
       ...prevState,
-      [name]: name === 'meterbeforefile' ? files[0] : value,
+      [name]: type === 'file' ? (files.length > 0 ? files[0] : null) : value,
     }));
   };
 
@@ -290,12 +273,12 @@ const UserTripView = () => {
       );
 
       // Show success alert
-      await Swal.fire({
-        icon: 'success',
-        title: 'Trip Canceled',
-        text: 'The trip has been successfully canceled.',
-        confirmButtonText: 'OK',
-      });
+      // await Swal.fire({
+      //   icon: 'success',
+      //   title: 'Trip Canceled',
+      //   text: 'The trip has been successfully canceled.',
+      //   confirmButtonText: 'OK',
+      // });
     } catch (err) {
       if (err.response && err.response.status === 401) {
         // Token has expired
@@ -329,7 +312,8 @@ const UserTripView = () => {
   const handleCloseModal = () => setShowModal(false);
   const handleCloseModal2 = () => setshowstarttripModel(false);
 
-  const handleSavetrips = async (tripId) => {
+  const handleSavetrips = async (e, tripId) => {
+    e.preventDefault();
     try {
       const token = localStorage.getItem('jwtToken');
       if (!token) {
@@ -414,6 +398,8 @@ const UserTripView = () => {
       !formData.meterafter ||
       !formData.mileage ||
       !formData.fuel ||
+      !formData.filledfuelfile ||
+      !formData.mileagefile ||
       !formData.invoicedoc ||
       !formData.meterafterfile
     ) {
@@ -569,7 +555,7 @@ const UserTripView = () => {
                               onClick={() => handleCompleteTrip(trip)}
                               className="bg-blue-500 text-white text-sm px-4 py-2 rounded hover:bg-blue-600"
                             >
-                              CompleteTrip
+                              Submit Trip
                             </button>
                           </>
                         )}
@@ -615,93 +601,167 @@ const UserTripView = () => {
       {/* Modal for completing trip */}
       {showModal && currentTrip && (
         <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-xl font-semibold text-gray-800 mb-3">
+          <div className="bg-white p-3 rounded-lg shadow-lg w-full max-w-sm">
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">
               Complete Trip
             </h2>
             <form onSubmit={(e) => handleUpdateTrip(e, currentTrip)}>
-              <div className="mb-3">
-                <label className="block text-gray-700">Meter After</label>
+              <div className="mb-2">
+                <label className="block text-gray-700 text-sm">
+                  Meter After
+                </label>
                 <input
                   type="text"
                   name="meterafter"
                   value={formData.meterafter}
                   onChange={handleChange}
-                  className="mt-1 p-2 border rounded-md w-full"
-                />
-              </div>
-              <div className="mb-3">
-                <label className="block text-gray-700">Add Mileage</label>
-                <input
-                  type="text"
-                  name="mileage"
-                  value={formData.mileage}
-                  onChange={handleChange}
-                  className="mt-1 p-2 border rounded-md w-full"
-                />
-              </div>
-              <div className="mb-3">
-                <label className="block text-gray-700">Fuel</label>
-                <input
-                  type="text"
-                  name="fuel"
-                  value={formData.fuel}
-                  onChange={handleChange}
-                  className="mt-1 p-2 border rounded-md w-full"
+                  className="mt-1 p-1 border rounded-md w-full text-sm"
+                  required
                 />
               </div>
 
-              {/* Three invoices in one line */}
-              <div className="mb-3 flex space-x-2">
+              <div className="flex space-x-2">
+                <div className="w-1/2">
+                  <label className="block text-gray-700 text-sm">
+                    Avg Mileage
+                  </label>
+                  <input
+                    type="text"
+                    name="mileage"
+                    value={formData.mileage}
+                    onChange={handleChange}
+                    className="mt-1 p-1 border rounded-md w-full text-sm"
+                    required
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-gray-700 text-sm">
+                    Filled Fuel
+                  </label>
+                  <input
+                    type="text"
+                    name="fuel"
+                    value={formData.fuel}
+                    onChange={handleChange}
+                    className="mt-1 p-1 border rounded-md w-full text-sm"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex space-x-2 mt-2">
+                <div className="w-1/2">
+                  <label className="block text-gray-700 text-sm">
+                    Fuel Photo
+                  </label>
+                  <input
+                    type="file"
+                    name="filledfuelfile"
+                    onChange={handleChange}
+                    className="p-1 border rounded-md w-full text-sm"
+                    required
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-gray-700 text-sm">
+                    Fuel Photo2
+                  </label>
+                  <input
+                    type="file"
+                    name="filledfuelfile2"
+                    onChange={handleChange}
+                    className="p-1 border rounded-md w-full text-sm"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex space-x-2 mt-2">
+                <div className="w-1/2">
+                  <label className="block text-gray-700 text-sm">
+                    Mileage Photo
+                  </label>
+                  <input
+                    type="file"
+                    name="mileagefile"
+                    onChange={handleChange}
+                    className="p-1 border rounded-md w-full text-sm"
+                    required
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-gray-700 text-sm">
+                    Mileage Photo2
+                  </label>
+                  <input
+                    type="file"
+                    name="mileagefile2"
+                    onChange={handleChange}
+                    className="p-1 border rounded-md w-full text-sm"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex space-x-2 mt-2">
                 <div className="w-1/3">
-                  <label className="block text-gray-700">Invoice</label>
+                  <label className="block text-gray-700 text-sm">Invoice</label>
                   <input
                     type="file"
                     name="invoicedoc"
                     onChange={handleChange}
-                    className="mt-1 p-2 border rounded-md w-full"
+                    className="p-1 border rounded-md w-full text-sm"
+                    required
                   />
                 </div>
                 <div className="w-1/3">
-                  <label className="block text-gray-700">Invoice2</label>
+                  <label className="block text-gray-700 text-sm">
+                    Invoice2
+                  </label>
                   <input
                     type="file"
                     name="invoicedoc2"
                     onChange={handleChange}
-                    className="mt-1 p-2 border rounded-md w-full"
+                    className="p-1 border rounded-md w-full text-sm"
                   />
                 </div>
                 <div className="w-1/3">
-                  <label className="block text-gray-700">Invoice3</label>
+                  <label className="block text-gray-700 text-sm">
+                    Invoice3
+                  </label>
                   <input
                     type="file"
                     name="invoicedoc3"
                     onChange={handleChange}
-                    className="mt-1 p-2 border rounded-md w-full"
+                    className="p-1 border rounded-md w-full text-sm"
                   />
                 </div>
               </div>
 
-              <div className="mb-3">
-                <label className="block text-gray-700">Meter After File</label>
+              <div className="mt-2">
+                <label className="block text-gray-700 text-sm">
+                  Meter After File
+                </label>
                 <input
                   type="file"
                   name="meterafterfile"
                   onChange={handleChange}
-                  className="mt-1 p-2 border rounded-md w-full"
+                  className="p-1 border rounded-md w-full text-sm"
+                  required
                 />
               </div>
-              <div className="flex justify-between">
+
+              <div className="flex justify-between mt-3">
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="bg-gray-500 text-white px-3 py-2 rounded"
+                  className="bg-gray-500 text-white px-2 py-1 rounded text-sm"
                 >
                   Close
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-500 text-white px-3 py-2 rounded"
+                  className="bg-blue-500 text-white px-2 py-1 rounded text-sm"
                 >
                   Submit
                 </button>
@@ -717,15 +777,27 @@ const UserTripView = () => {
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">
               Start Trip
             </h2>
-            <form>
+            <form onSubmit={(e) => handleSavetrips(e, currentTrip.id)}>
               <div className="mb-4">
-                <label className="block text-gray-700">MeterBefore</label>
+                <label className="block text-gray-700">Current Meter</label>
                 <input
                   type="text"
                   name="meterbefore"
                   value={savetrip.meterbefore}
                   onChange={handleTripChange}
                   className="mt-2 p-2 border rounded-md w-full"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700">Fuel In Stock</label>
+                <input
+                  type="text"
+                  name="fuelinstock"
+                  value={savetrip.fuelinstock}
+                  onChange={handleTripChange}
+                  className="mt-2 p-2 border rounded-md w-full"
+                  required
                 />
               </div>
 
@@ -739,6 +811,7 @@ const UserTripView = () => {
                   value={savetrip.vehiclenumber}
                   onChange={handleTripChange}
                   className="mt-2 p-2 border rounded-md w-full"
+                  required
                 >
                   <option value="">Select a vehicle</option>
                   <option value="Other">Other</option>
@@ -759,10 +832,18 @@ const UserTripView = () => {
                 </select>
               </div>
 
-              <label className="block text-gray-700">MeterBefore</label>
+              <label className="block text-gray-700">Current Meter Photo</label>
               <input
                 type="file"
                 name="meterbeforefile"
+                onChange={handleTripChange}
+                className="mt-2 p-2 border rounded-md w-full"
+                required
+              />
+              <label className="block text-gray-700">Fuel In Stock Photo</label>
+              <input
+                type="file"
+                name="fuelinstockfile"
                 onChange={handleTripChange}
                 className="mt-2 p-2 border rounded-md w-full"
                 required
@@ -776,8 +857,7 @@ const UserTripView = () => {
                   Close
                 </button>
                 <button
-                  type="button"
-                  onClick={() => handleSavetrips(currentTrip.id)}
+                  type="submit"
                   className="bg-blue-500 text-white px-4 py-2 rounded"
                 >
                   Submit

@@ -124,14 +124,6 @@ const ViewTripDetails = () => {
 
         // Redirect to login page after the alert
         window.location.href = '/'; // Adjust with your login page path
-      } else {
-        // Handle other errors
-        console.error('Error fetching categories:', error);
-        await Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'An error occurred while fetching the categories. Please try again.',
-        });
       }
     }
   };
@@ -155,14 +147,6 @@ const ViewTripDetails = () => {
 
         // Redirect to login page after the alert
         window.location.href = '/'; // Adjust with your login page path
-      } else {
-        // Handle other errors
-        console.error('Error fetching vehicles:', error);
-        await Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'An error occurred while fetching vehicles. Please try again.',
-        });
       }
     }
   };
@@ -197,14 +181,6 @@ const ViewTripDetails = () => {
 
           // Redirect to login page after the alert
           window.location.href = '/'; // Adjust with your login page path
-        } else {
-          // Handle other errors
-          console.error('Error fetching user details:', userError);
-          await Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'An error occurred while fetching user details. Please try again.',
-          });
         }
       });
   }, [sortField, sortOrder, currentPage]);
