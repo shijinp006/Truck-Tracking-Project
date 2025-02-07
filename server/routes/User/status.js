@@ -25,7 +25,7 @@ router.post(
     },
     { name: "fuelinstockfile", maxCount: 1 },
   ]),
-  uploadAndCompress,
+  uploadAndCompressMultiple,
   tripAssigned
 );
 

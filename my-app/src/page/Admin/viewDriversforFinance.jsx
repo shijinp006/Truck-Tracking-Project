@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
-const ViewDrivers = () => {
+const ViewDriversforFinance = () => {
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentuser] = useState(null);
   const [isFormVisible, setFormVisible] = useState(false);
@@ -434,12 +434,12 @@ const ViewDrivers = () => {
                         Redeem
                       </button>
                       {/* Additional Edit Button */}
-                      <button
+                      {/* <button
                         className="bg-blue-400 text-white px-3 py-1 rounded hover:bg-blue-500"
                         onClick={() => handleEdit(user)}
                       >
                         Edit
-                      </button>
+                      </button> */}
                       {/* Additional Delete Button */}
                       {/* <button
                       className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500"
@@ -582,4 +582,4 @@ const ViewDrivers = () => {
   );
 };
 
-export default ViewDrivers;
+export default ViewDriversforFinance;

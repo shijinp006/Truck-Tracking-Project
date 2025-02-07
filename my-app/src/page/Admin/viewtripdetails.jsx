@@ -6,6 +6,13 @@ import * as XLSX from 'xlsx';
 import { use } from 'react';
 import { toast } from 'react-hot-toast';
 
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css'; // Swiper basic styles
+import 'swiper/css/navigation'; // Optional: for navigation arrows
+import 'swiper/css/pagination'; // Optional: for pagination dots
+import { Navigation, Pagination } from 'swiper/modules';
+import { Download } from 'lucide-react';
+
 // Set up the worker for PDF.js
 GlobalWorkerOptions.workerSrc =
   '//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
@@ -52,6 +59,15 @@ const ViewTripDetails = () => {
     invoicedoc: '',
   });
   const [ViewTrip, setViewTrip] = useState([]);
+  //images
+  const allFiles = [
+    ViewTrip.invoicedoc,
+    ViewTrip.meterbeforefile,
+    ViewTrip.meterafterfile,
+    ViewTrip.fuelinstockfile,
+    ViewTrip.filledfuelfile,
+    ViewTrip.mileagefile,
+  ].filter(Boolean); // Remove null/undefined values
 
   const BackendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -318,91 +334,91 @@ const ViewTripDetails = () => {
 
   const handleClosetripModal = () => setShowtripModal(false);
 
-  const handleCancel = async (id) => {
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'This will cancel the trip.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, cancel it!',
-      cancelButtonText: 'No, keep it',
-    });
+  // const handleCancel = async (id) => {
+  //   const result = await Swal.fire({
+  //     title: 'Are you sure?',
+  //     text: 'This will cancel the trip.',
+  //     icon: 'warning',
+  //     showCancelButton: true,
+  //     confirmButtonText: 'Yes, cancel it!',
+  //     cancelButtonText: 'No, keep it',
+  //   });
 
-    if (!result.isConfirmed) return;
+  //   if (!result.isConfirmed) return;
 
-    try {
-      const response = await axios.post(
-        `/Admin/tripcancel/${id}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
+  //   try {
+  //     const response = await axios.post(
+  //       `/Admin/tripcancel/${id}`,
+  //       {},
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem('token')}`,
+  //         },
+  //       }
+  //     );
 
-      if (response.data.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Cancelled!',
-          text: 'The trip status has been updated to "Cancelled".',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000,
-          background: '#ff9800', // Orange background for cancellation
-          color: 'white',
-        });
+  //     if (response.data.success) {
+  //       Swal.fire({
+  //         icon: 'success',
+  //         title: 'Cancelled!',
+  //         text: 'The trip status has been updated to "Cancelled".',
+  //         toast: true,
+  //         position: 'top-end',
+  //         showConfirmButton: false,
+  //         timer: 3000,
+  //         background: '#ff9800', // Orange background for cancellation
+  //         color: 'white',
+  //       });
 
-        // Update the trip status in the UI
-        setFilteredTrips((prev) =>
-          prev.map((trip) =>
-            trip.id === id ? { ...trip, status: 'cancelled' } : trip
-          )
-        );
+  //       // Update the trip status in the UI
+  //       setFilteredTrips((prev) =>
+  //         prev.map((trip) =>
+  //           trip.id === id ? { ...trip, status: 'cancelled' } : trip
+  //         )
+  //       );
 
-        setShowtripModal(false);
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: 'Failed to cancel trip.',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000,
-          background: '#dc3545', // Red background for error
-          color: 'white',
-        });
-      }
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
-        // Handle token expiration
-        await Swal.fire({
-          icon: 'error',
-          title: 'Session Expired',
-          text: '❌ Your session has expired. Please log in again.',
-        });
+  //       setShowtripModal(false);
+  //     } else {
+  //       Swal.fire({
+  //         icon: 'error',
+  //         title: 'Error!',
+  //         text: 'Failed to cancel trip.',
+  //         toast: true,
+  //         position: 'top-end',
+  //         showConfirmButton: false,
+  //         timer: 3000,
+  //         background: '#dc3545', // Red background for error
+  //         color: 'white',
+  //       });
+  //     }
+  //   } catch (error) {
+  //     if (error.response && error.response.status === 401) {
+  //       // Handle token expiration
+  //       await Swal.fire({
+  //         icon: 'error',
+  //         title: 'Session Expired',
+  //         text: '❌ Your session has expired. Please log in again.',
+  //       });
 
-        // Redirect to login page after the alert
-        window.location.href = '/'; // Adjust with your login page path
-      } else {
-        // Handle other errors
-        Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: 'Failed to cancel trip. Please try again.',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000,
-          background: '#dc3545', // Red background for error
-          color: 'white',
-        });
-        console.error('Error cancelling trip:', error);
-      }
-    }
-  };
+  //       // Redirect to login page after the alert
+  //       window.location.href = '/'; // Adjust with your login page path
+  //     } else {
+  //       // Handle other errors
+  //       Swal.fire({
+  //         icon: 'error',
+  //         title: 'Error!',
+  //         text: 'Failed to cancel trip. Please try again.',
+  //         toast: true,
+  //         position: 'top-end',
+  //         showConfirmButton: false,
+  //         timer: 3000,
+  //         background: '#dc3545', // Red background for error
+  //         color: 'white',
+  //       });
+  //       console.error('Error cancelling trip:', error);
+  //     }
+  //   }
+  // };
   // const handleDelete = async (id) => {
   //   const result = await Swal.fire({
   //     title: 'Are you sure?',
@@ -1203,107 +1219,117 @@ const ViewTripDetails = () => {
 
       {showtripModal && ViewTrip && (
         <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-sm">
-            <h2 className="text-xl font-semibold text-gray-800 mb-3">
+          <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-xl max-h-[100vh] overflow-y-auto font-custom">
+            {/* Title */}
+            <h2 className="text-2xl font-semibold text-gray-800 text-center mb-4">
               Trip Details
             </h2>
-            <p className="text-sm">
-              <strong>Trip Id:</strong> {ViewTrip.id || 'N/A'}
-            </p>
-            <p className="text-sm">
-              <strong>Driver Name:</strong> {ViewTrip.name || 'N/A'}
-            </p>
-            <p className="text-sm">
-              <strong>From:</strong> {ViewTrip.tripfrom || 'N/A'}
-            </p>
-            <p className="text-sm">
-              <strong>To:</strong> {ViewTrip.tripto || 'N/A'}
-            </p>
-            <p className="text-sm">
-              <strong>Vehicle Number:</strong> {ViewTrip.vehiclenumber || 'N/A'}
-            </p>
-            <p className="text-sm">
-              <strong>MeterBefore:</strong> {ViewTrip.meterbefore || 'N/A'}
-            </p>
-            <p className="text-sm">
-              <strong>MeterAfter:</strong> {ViewTrip.meterafter || 'N/A'}
-            </p>
-            <p className="text-sm">
-              <strong>KM</strong> {ViewTrip.meterafter - ViewTrip.meterbefore}
-            </p>
-            <p className="text-sm">
-              <strong>Mileage:</strong> {ViewTrip.mileage}
-            </p>
-            <p className="text-sm">
-              <strong>Credit Point:</strong> {ViewTrip.credit || '0'}
-            </p>
-            <p className="text-sm">
-              <strong>Trip Mode:</strong> {ViewTrip.tripmode || 'N/A'}
-            </p>
-            <p className="text-sm">
-              <strong>Category:</strong> {ViewTrip.category || 'N/A'}
-            </p>
-            <p className="text-sm">
-              <strong>Status:</strong> {ViewTrip.status || 'N/A'}
-            </p>
 
-            {/* Render Image */}
-            {ViewTrip.invoicedoc &&
-              ViewTrip.invoicedoc.match(/\.(jpeg|jpg|png|gif)$/) && (
-                <div className="mt-3">
-                  <strong>Invoice Image:</strong>
-                  <br />
-                  <a
-                    href={`${BackendUrl}/uploads/compressed_${ViewTrip.invoicedoc}`}
-                    target="_blank"
-                  >
-                    <img
-                      src={`${BackendUrl}/uploads/compressed_${ViewTrip.invoicedoc}`}
-                      alt="Invoice"
-                      className="w-40 h-20 mt-2 rounded shadow"
-                      onError={() =>
-                        console.error('Image not found or invalid format')
-                      }
-                    />
-                  </a>
-                  <a
-                    target="_blank"
-                    href={`${BackendUrl}/uploads/${ViewTrip.invoicedoc}`}
-                    className="mt-2 inline-block bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded shadow"
-                  >
-                    Download Image
-                  </a>
-                </div>
-              )}
-            {console.log(ViewTrip.invoicedoc, 'invoice doc')}
+            {/* Trip Details */}
+            <div className="grid grid-cols-2 gap-4 text-sm py-2">
+              <p>
+                <strong>Trip Id:</strong> {ViewTrip.id || 'N/A'}
+              </p>
+              <p>
+                <strong>Driver Name:</strong> {ViewTrip.name || 'N/A'}
+              </p>
+              <p>
+                <strong>From:</strong> {ViewTrip.tripfrom || 'N/A'}
+              </p>
+              <p>
+                <strong>To:</strong> {ViewTrip.tripto || 'N/A'}
+              </p>
+              <p>
+                <strong>Vehicle Number:</strong>{' '}
+                {ViewTrip.vehiclenumber || 'N/A'}
+              </p>
+              <p>
+                <strong>Meter Before:</strong> {ViewTrip.meterbefore || 'N/A'}
+              </p>
+              <p>
+                <strong>Meter After:</strong> {ViewTrip.meterafter || 'N/A'}
+              </p>
+              <p>
+                <strong>KM:</strong>{' '}
+                {ViewTrip.meterafter - ViewTrip.meterbefore || 'N/A'}
+              </p>
+              <p>
+                <strong>Mileage:</strong> {ViewTrip.mileage || 'N/A'}
+              </p>
+              <p>
+                <strong>Credit Point:</strong> {ViewTrip.credit || '0'}
+              </p>
+              <p>
+                <strong>Trip Mode:</strong> {ViewTrip.tripmode || 'N/A'}
+              </p>
+              <p>
+                <strong>Category:</strong> {ViewTrip.category || 'N/A'}
+              </p>
+              <p>
+                <strong>Status:</strong> {ViewTrip.status || 'N/A'}
+              </p>
+            </div>
 
-            {ViewTrip.invoicedoc && ViewTrip.invoicedoc.match(/\.pdf$/) && (
-              <div className="mt-3">
-                <strong>Invoice PDF:</strong>
-                <a
-                  href={`${BackendUrl}/uploads/${ViewTrip.invoicedoc}`}
-                  target="_blank"
+            {/* Uploaded Files Section */}
+            <div className="mt-4 text-center">
+              <strong>Uploaded Files:</strong>
+              <div className="mt-2 relative">
+                <Swiper
+                  spaceBetween={4}
+                  slidesPerView={3}
+                  pagination={{ clickable: true, el: '.custom-pagination' }}
+                  modules={[Pagination]}
+                  className="w-full"
                 >
-                  <PDFRenderer
-                    pdfUrl={`${BackendUrl}/uploads/${ViewTrip.invoicedoc}`}
-                  />
-                </a>
-                <a
-                  target="_blank"
-                  href={`${BackendUrl}/uploads/${ViewTrip.invoicedoc}`}
-                  className="mt-2 inline-block bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded shadow"
-                >
-                  Download PDF
-                </a>
+                  {allFiles.map((doc, index) => (
+                    <SwiperSlide
+                      key={index}
+                      className="relative flex flex-col items-center gap-2"
+                    >
+                      {/\.(jpeg|jpg|png|gif)$/.test(doc) ? (
+                        <a
+                          href={`${BackendUrl}/uploads/compressed_${doc}`}
+                          target="_blank"
+                        >
+                          <img
+                            src={`${BackendUrl}/uploads/compressed_${doc}`}
+                            alt={`File ${index + 1}`}
+                            className="w-24 h-24 object-cover rounded shadow border"
+                          />
+                        </a>
+                      ) : (
+                        <a
+                          href={`${BackendUrl}/uploads/${doc}`}
+                          target="_blank"
+                        >
+                          <div className="w-24 h-24 flex items-center justify-center bg-gray-200 border rounded shadow">
+                            <PDFRenderer
+                              pdfUrl={`${BackendUrl}/uploads/${doc}`}
+                            />
+                          </div>
+                        </a>
+                      )}
+
+                      <a
+                        target="_blank"
+                        href={`${BackendUrl}/uploads/${doc}`}
+                        className="absolute bottom-2 right-2 bg-blue-500 hover:bg-blue-600 text-white text-xs p-1 rounded shadow flex items-center justify-center w-7 h-7"
+                      >
+                        <Download className="w-4 h-4 text-white" />
+                      </a>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+                <div className="custom-pagination mt-3 flex justify-center"></div>
               </div>
-            )}
+            </div>
 
-            {/* Buttons */}
-            <div className="flex flex-wrap justify-center gap-2 mt-4">
+            {/* Buttons Section */}
+            <div className="flex justify-center gap-4 mt-6">
               <button
                 type="button"
                 onClick={() => handleEdit(ViewTrip)}
-                className="w-20 h-10 bg-blue-500 hover:bg-blue-600 text-white text-base rounded shadow"
+                className="w-20 h-10 bg-blue-500 hover:bg-blue-600 text-white text-lg rounded shadow"
               >
                 Edit
               </button>
@@ -1311,7 +1337,7 @@ const ViewTripDetails = () => {
               <button
                 type="button"
                 onClick={handleClosetripModal}
-                className="w-20 h-10 bg-gray-500 hover:bg-gray-600 text-white text-base rounded shadow"
+                className="w-20 h-10 bg-gray-500 hover:bg-gray-600 text-white text-lg rounded shadow"
               >
                 Close
               </button>
@@ -1320,15 +1346,16 @@ const ViewTripDetails = () => {
                 <button
                   type="button"
                   onClick={() => handleCompleted(ViewTrip.id)}
-                  className="w-20 h-10 bg-red-400 hover:bg-red-500 text-white text-base rounded shadow"
+                  className="w-20 h-10 bg-red-500 hover:bg-red-600 text-white text-lg rounded shadow"
                 >
-                  Approval
+                  Approve
                 </button>
               )}
             </div>
           </div>
         </div>
       )}
+
       {editshowmodel && (
         <div className="mt-6 bg-white p-6 shadow rounded-md">
           <h3 className="text-xl font-semibold text-gray-700 mb-4">

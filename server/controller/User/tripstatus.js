@@ -247,7 +247,7 @@ export const tripComplete = async (req, res) => {
         WHERE id = ?
       `;
 
-    const status = "tobeapproved";
+    const status = "waiting for approval";
     const values = [
       meterafter,
       mileage,

@@ -4,5 +4,12 @@ export default {
   theme: {
     extend: {},
   },
+  theme: {
+    extend: {
+      fontFamily: {
+        custom: ['Poppins', 'sans-serif'],
+      },
+    },
+  },
   plugins: [],
 };
